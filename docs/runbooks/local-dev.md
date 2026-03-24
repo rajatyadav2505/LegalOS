@@ -4,6 +4,8 @@
 
 Run the LegalOS repository locally for development in a self-hostable setup.
 
+For native Windows setup, use [WindowsSetup.md](/Users/rajatyadav/LegalOS/WindowsSetup.md).
+
 ## Expected Local Stack
 
 - Next.js web app

@@ -244,6 +244,7 @@ See [docs/runbooks/self-hosting.md](/Users/rajatyadav/LegalOS/docs/runbooks/self
 - [docs/adr/0001-architecture.md](/Users/rajatyadav/LegalOS/docs/adr/0001-architecture.md)
 - [docs/runbooks/local-dev.md](/Users/rajatyadav/LegalOS/docs/runbooks/local-dev.md)
 - [docs/runbooks/testing.md](/Users/rajatyadav/LegalOS/docs/runbooks/testing.md)
+- [WindowsSetup.md](/Users/rajatyadav/LegalOS/WindowsSetup.md)
 - [IMPLEMENTATION_STATUS.md](/Users/rajatyadav/LegalOS/IMPLEMENTATION_STATUS.md)
 - [BACKLOG.md](/Users/rajatyadav/LegalOS/BACKLOG.md)
 
