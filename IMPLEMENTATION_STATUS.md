@@ -87,6 +87,20 @@ Delivered:
 - Plain-language English and Hindi matter summaries for beneficiary or coordinator use
 - Low-bandwidth brief mode for constrained device or network conditions
 
+## Post-Phase-5 Hardening
+
+Status: `in_progress`
+
+Delivered:
+
+- Startup guardrails now reject the default JWT secret outside development and test
+- Uploads enforce a configured size limit and sanitize stored file paths and file names
+- Research memo export, saved authority retrieval, and quote-lock reads now enforce organization scoping
+- Login throttling now blocks repeated failed attempts
+- Browser auth storage now uses cookies only, with `Secure` enabled on HTTPS
+- LIKE filters now escape wildcard characters, sequencing matching uses safer phrase boundaries, and scanned PDFs can fall back to OCR on embedded page images
+- Integration coverage now includes tenant isolation, upload-size enforcement, and login throttling
+
 ## Risks And Constraints
 
 - Docker is still unavailable on this host, so compose services remain documented but not runtime-verified in this environment.
@@ -105,6 +119,7 @@ Delivered:
 - `./.venv/bin/mypy apps/api/app`
 - `./.venv/bin/pytest tests/bootstrap tests/integration -q`
 - `./.venv/bin/pytest tests/integration/test_workflow_phases.py -q`
+- `./.venv/bin/pytest tests/integration/test_security_hardening.py -q`
 - `PATH=/usr/local/bin:$PATH COREPACK_HOME=/tmp/corepack /usr/local/bin/corepack pnpm --filter @legalos/web typecheck`
 - `PATH=/usr/local/bin:$PATH COREPACK_HOME=/tmp/corepack /usr/local/bin/corepack pnpm --filter @legalos/web build`
 - `cd apps/api && DATABASE_URL=sqlite+aiosqlite:///../../.data/migrate-phase345-smoke.db ../../.venv/bin/alembic upgrade head`

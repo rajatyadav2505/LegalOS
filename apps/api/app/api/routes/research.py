@@ -60,9 +60,12 @@ async def save_authority(
 async def get_quote_span(
     quote_span_id: UUID,
     session: AsyncSession = Depends(get_db_session),
-    _current_user=Depends(get_current_user),
+    current_user=Depends(get_current_user),
 ) -> QuoteLockResponse:
-    quote_span, checksum = await ResearchService(session).quote_lock(quote_span_id=quote_span_id)
+    quote_span, checksum = await ResearchService(session).quote_lock(
+        quote_span_id=quote_span_id,
+        organization_id=current_user.organization_id,
+    )
     return QuoteLockResponse(
         quote_span_id=quote_span.id,
         anchor_label=quote_span.anchor_label,
@@ -76,9 +79,12 @@ async def export_research_memo(
     matter_id: UUID,
     response_format: str = Query(default="json"),
     session: AsyncSession = Depends(get_db_session),
-    _current_user=Depends(get_current_user),
+    current_user=Depends(get_current_user),
 ):
-    memo = await ResearchService(session).export_memo(matter_id=matter_id)
+    memo = await ResearchService(session).export_memo(
+        matter_id=matter_id,
+        organization_id=current_user.organization_id,
+    )
     if response_format == "markdown":
         return PlainTextResponse(memo.content, media_type="text/markdown")
     return memo

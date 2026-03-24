@@ -43,6 +43,7 @@ Define the testing strategy for a trust-sensitive litigation product.
 - `tests/integration/test_research_flow.py`: upload, search, save, quote retrieval, and export
 - `tests/integration/test_bundle_flow.py`: chronology, contradictions, duplicates, exhibit links, and queued-ingest status
 - `tests/integration/test_workflow_phases.py`: drafting, style packs, redlines, strategy guardrails, and institutional approvals
+- `tests/integration/test_security_hardening.py`: tenant isolation, upload-size enforcement, and login throttling
 - `tests/e2e/research-smoke.spec.ts`: browser happy-path placeholder for Playwright wiring
 - `tests/e2e/workflows-smoke.spec.ts`: browser-level drafting, strategy, and institutional workflow smoke
 

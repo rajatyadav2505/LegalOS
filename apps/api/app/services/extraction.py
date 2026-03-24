@@ -53,9 +53,16 @@ class DocumentExtractor:
             reader = PdfReader(BytesIO(payload))
             paragraphs: list[ExtractedParagraph] = []
             counter = 1
+            used_ocr = False
             for page_number, page in enumerate(reader.pages, start=1):
                 page_text = page.extract_text() or ""
-                for paragraph in self._split_paragraphs(page_text):
+                page_paragraphs = self._split_paragraphs(page_text)
+                if not page_paragraphs:
+                    ocr_text = self._ocr_pdf_page(page)
+                    if ocr_text:
+                        page_paragraphs = self._split_paragraphs(ocr_text)
+                        used_ocr = True
+                for paragraph in page_paragraphs:
                     paragraphs.append(
                         ExtractedParagraph(
                             text=paragraph,
@@ -67,7 +74,7 @@ class DocumentExtractor:
             return ExtractedDocument(
                 title=Path(file_name).stem,
                 paragraphs=paragraphs,
-                extraction_method="pdf_text",
+                extraction_method="pdf_text_ocr" if used_ocr else "pdf_text",
             )
         if (
             suffix in {".png", ".jpg", ".jpeg", ".tiff", ".tif"}
@@ -110,6 +117,25 @@ class DocumentExtractor:
             except UnicodeDecodeError:
                 continue
         return payload.decode("utf-8", errors="ignore")
+
+    def _ocr_pdf_page(self, page) -> str:
+        extracted: list[str] = []
+        for image_file in getattr(page, "images", []):
+            image_data = getattr(image_file, "data", None)
+            if not image_data:
+                continue
+            image = Image.open(BytesIO(image_data))
+            try:
+                text = pytesseract.image_to_string(
+                    image,
+                    lang=self.settings.ocr_languages,
+                    config=self.settings.ocr_tesseract_config,
+                )
+            except pytesseract.TesseractNotFoundError as exc:
+                raise ValueError("OCR is unavailable because Tesseract is not installed") from exc
+            if text.strip():
+                extracted.append(text)
+        return "\n\n".join(extracted)
 
     @staticmethod
     def _split_paragraphs(text: str) -> list[str]:

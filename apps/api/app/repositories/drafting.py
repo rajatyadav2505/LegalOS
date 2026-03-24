@@ -14,6 +14,7 @@ from app.domain.drafting import (
     StylePack,
 )
 from app.domain.enums import DraftDocumentType
+from app.domain.matter import Matter
 from app.domain.research import SavedAuthority
 
 
@@ -79,10 +80,19 @@ class DraftingRepository:
         )
         return list(result.scalars())
 
-    async def list_saved_authorities_for_matter(self, matter_id: UUID) -> list[SavedAuthority]:
+    async def list_saved_authorities_for_matter(
+        self,
+        *,
+        matter_id: UUID,
+        organization_id: UUID,
+    ) -> list[SavedAuthority]:
         result = await self.session.execute(
             select(SavedAuthority)
-            .where(SavedAuthority.matter_id == matter_id)
+            .join(Matter, Matter.id == SavedAuthority.matter_id)
+            .where(
+                SavedAuthority.matter_id == matter_id,
+                Matter.organization_id == organization_id,
+            )
             .options(
                 selectinload(SavedAuthority.quote_span),
                 selectinload(SavedAuthority.citation),

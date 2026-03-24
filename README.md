@@ -1,40 +1,113 @@
 # LegalOS
 
-Indian litigation operating system for advocates, chambers, and institutional legal-aid teams.
+India-first litigation operating system for advocates, chambers, senior briefing teams, and DLSA or institutional legal-aid workflows.
 
-This repository is implemented as a modular monolith with worker planes. Phase 0 through Phase 5 are now delivered as runnable local slices: a FastAPI backend, a Next.js App Router frontend, typed workspace packages, local compose infrastructure, seeded demo data, quote-lock research flows, bundle intelligence, structured drafting, bounded strategy support, and institutional approval and audit workflows.
+LegalOS is not a generic legal chatbot. It is a source-grounded litigation workspace built around verified research, quote-safe citation handling, matter-bundle intelligence, structured drafting, bounded strategy support, and institutional auditability.
 
-## Phase 0 / 5 Delivered
+## Current Scope
 
-- `apps/api`: auth, matter, document upload, extraction, chunking, quote spans, research search, saved authorities, memo export
-- `apps/api`: chronology, contradiction, duplicate, exhibit-link, and bundle-map APIs
-- `apps/api`: style packs, structured draft generation, annexures, verified-authority insertion, markdown export, and redlines
-- `apps/api`: strategy workspace, issue cards, bench questions, rebuttal cards, bounded scenario branches, and sequencing console guardrails
-- `apps/api`: institutional dashboard, approvals, audit trail, low-bandwidth brief, and plain-language English/Hindi summaries
-- `apps/web`: login, matter index, matter cockpit, upload workspace, research canvas, bundle map workspace, draft studio, strategy engine, and institutional mode
-- `apps/worker-ingest` and `apps/worker-ai`: worker-plane entrypoints with a runnable ingest drain path
-- `packages/contracts`: typed web/API contracts
-- `packages/ui`: shared UI primitives with buildable workspace packaging
-- `infra/compose`: Postgres, Valkey, MinIO, and Tika local stack
-- `tests/fixtures`: demo matter bundle and verified public-law excerpts
-- `tests/integration`: quote-lock, research flow, bundle intelligence, drafting, strategy, sequencing, and institutional approval coverage
+This repository contains a modular monolith plus worker planes with Phase 0 through Phase 5 implemented as runnable local slices:
+
+- Research and precedent engine with verified citations, exact quote spans, saved authorities, and memo export
+- Document operating system with uploads, extraction, OCR-backed image handling, chunking, quote-lock spans, and matter/public-law search
+- Bundle intelligence with chronology, contradictions, duplicate groups, exhibit links, clustering, and ingest-state visibility
+- Drafting studio with structured draft schemas, style packs, unresolved placeholders, annexure scheduling, markdown export, and redlines
+- Strategy engine with best/fallback/risk lines, issue cards, rebuttal cards, bench questions, bounded scenario branches, and lawful sequencing guidance
+- Institutional mode with approval requests, reviews, audit visibility, low-bandwidth summaries, and plain-language English/Hindi matter briefs
+
+## Trust Rails
+
+The product is designed around litigation-grade traceability:
+
+- No fabricated authorities, citations, or verbatim quotes
+- Exact quotes render only from stored `quote_spans` with checksums
+- Drafting uses saved verified authorities, not freehand citation insertion
+- “Hide information” is implemented as a lawful sequencing console, not concealment coaching
+- Strategy output is explicitly decision support only, not certainty or outcome prediction
+- Matter access is organization-scoped from the API boundary inward
+
+## Architecture
+
+### Application shape
+
+- `apps/web`: Next.js App Router + TypeScript frontend
+- `apps/api`: FastAPI + SQLAlchemy + Pydantic backend
+- `apps/worker-ingest`: ingest drain path for queued document processing
+- `apps/worker-ai`: placeholder worker plane boundary for later AI orchestration
+- `packages/contracts`: shared typed contracts used by the web client
+- `packages/ui`: shared UI primitives
+- `packages/prompts`: versioned prompt and template assets
+
+### Data and infrastructure
+
+- PostgreSQL is the source of truth
+- Full-text search starts in PostgreSQL
+- Valkey is reserved for cache, queue, and ephemeral coordination
+- Local filesystem storage is the default object-storage adapter
+- MinIO and Apache Tika are available in the local compose stack for self-hosted evolution
+
+### Product boundaries
+
+- Modular monolith first, not premature microservices
+- Worker-plane boundaries are present, but durable queue orchestration is still future work
+- Search, storage, and workflow concerns are kept behind service/repository boundaries to stay self-hostable and vendor-neutral
+
+### Runtime responsibilities
+
+- Web: matter cockpit, research canvas, bundle map, draft studio, strategy workspace, and institutional dashboards
+- API: authentication, organization and matter access control, ingest orchestration, search, drafting, strategy, and audit persistence
+- Worker ingest: queued document recovery and large-bundle catch-up processing
+- Worker AI: future boundary for provider-backed orchestration, kept separate from the domain core
+
+## Repository Layout
+
+```text
+apps/
+  api/             FastAPI domain and API service
+  web/             Next.js web application
+  worker-ingest/   queued ingest drain path
+  worker-ai/       AI worker-plane boundary
+
+packages/
+  contracts/       shared typed API contracts
+  ui/              shared design system primitives
+  prompts/         versioned drafting and strategy prompt assets
+  config/          reserved shared config package
+  types/           reserved shared types package
+
+docs/
+  adr/             architecture decision records
+  product/         product overview
+  runbooks/        local-dev, self-hosting, testing guides
+  evals/           product-specific trust and quality eval docs
+
+infra/
+  compose/         local container stack
+  env/             example environment files
+  scripts/         bootstrap and tooling helpers
+
+tests/
+  fixtures/        demo corpus and matter bundle
+  integration/     API + DB workflow coverage
+  e2e/             Playwright browser smoke specs
+```
 
 ## Demo Credentials
 
 - Email: `demo@legalos.local`
 - Password: `DemoPass123!`
 
-## What This Repo Will Contain
-
-- `apps/web`: Next.js App Router frontend
-- `apps/api`: FastAPI domain/API service
-- `apps/worker-ingest`: document parsing, OCR, extraction, chunking, indexing
-- `apps/worker-ai`: research orchestration, drafting, contradiction analysis, strategy support
-- `packages/*`: shared UI, contracts, prompts, config, and types
-- `docs/*`: architecture decisions, product notes, runbooks, and evals
-- `infra/*`: local development and self-hosting assets
-
 ## Local Setup
+
+### Prerequisites
+
+- Python 3.12+
+- Node.js 20+
+- `corepack`
+- Docker or an already-running local Postgres/Valkey-compatible stack
+- Tesseract if you want OCR paths to run outside containers
+
+### Bootstrapping
 
 1. Copy [`.env.example`](/Users/rajatyadav/LegalOS/.env.example) to `.env`.
 2. Run `make setup`.
@@ -43,38 +116,142 @@ This repository is implemented as a modular monolith with worker planes. Phase 0
 5. Seed demo data with `make seed`.
 6. Start the API with `make dev-api`.
 7. Start the web app with `make dev-web`.
-8. Optionally drain queued ingest jobs with `make drain-queued`.
+8. If queued documents need recovery after a restart, run `make drain-queued`.
 
-## Verification Commands
+### Core commands
 
 - `make lint`
 - `make test`
 - `make build-web`
+- `make migrate`
+- `make seed`
+- `make compose-up`
+- `make compose-down`
+- `make drain-queued`
 
-## Product Principles
+## Configuration
 
-- No fabricated authorities, citations, or quote spans
-- Quote-lock for exact quoted text from stored source spans only
-- Self-hostable, open-source friendly, and containerized by default
-- Modular monolith first, not premature microservices
-- Provenance, auditability, and access control are first-class
-- AI features are decision support, not legal certainty
+Use [`.env.example`](/Users/rajatyadav/LegalOS/.env.example) as the baseline. The sample file now defaults to migration-first and safer runtime behavior:
 
-## Current Status
+- `AUTO_CREATE_DB=false`: schema changes should come from Alembic, not implicit startup DDL
+- `AUTO_SEED_DEMO=false`: seed explicitly with `make seed` so demo writes are intentional
+- `JWT_SECRET`: set a real secret before any non-local deployment
+- `MAX_UPLOAD_SIZE_BYTES=26214400`: default 25 MB request ceiling for direct uploads
+- `LOGIN_RATE_LIMIT_ATTEMPTS=5` and `LOGIN_RATE_LIMIT_WINDOW_SECONDS=300`: baseline login throttling
+- `LOCAL_STORAGE_DIR=.data/storage`: local filesystem object-storage adapter root
 
-Phase 0 through Phase 5 are in place. The current corpus uses verified Constitution excerpts with stored quote spans, including Article 22 safeguards, and the demo matter bundle exercises upload, extraction, research, saved authority handling, memo export, chronology generation, contradiction surfacing, duplicate detection, structured draft generation, redlines, bounded strategy review, lawful sequencing guidance, institutional approvals, audit events, and low-bandwidth summaries.
+For local development, the intended path is:
 
-## Operational Caveats
+1. keep `APP_ENV=development`
+2. run `make compose-up`
+3. run `make migrate`
+4. run `make seed`
+5. start `make dev-api` and `make dev-web`
 
-- Docker Compose is documented but not runtime-verified on this host because Docker is unavailable here.
-- Background ingest is currently best-effort FastAPI `BackgroundTasks` plus the explicit `make drain-queued` worker path, not a durable queue.
-- Bundle analysis rebuilds matter-level intelligence after each processed document, which is acceptable for Phase 2 but should move to more granular orchestration in later phases.
-- Drafting is structured and traceable, but still template-driven rather than learned from a larger verified chamber corpus.
-- Strategy, sequencing, and institutional summaries are explicitly decision support only and must not be treated as certainty or outcome prediction.
+## Demo Workflow
 
-## Next Milestones
+Use the seeded matter to walk the product vertically:
 
-1. Durable workflow execution with queue-backed ingest and AI orchestration boundaries.
-2. Broader verified case-law and statute corpus beyond the seeded constitutional baseline.
-3. OCR and large-bundle hardening for scanned production records.
-4. Expanded Playwright and product-eval automation on a fully provisioned self-hosted stack.
+1. Open `/login` and sign in with the demo user.
+2. Open the matter cockpit from `/matters`.
+3. Upload one or more matter documents from the Upload workspace.
+4. Open the Bundle Map and confirm chronology, contradictions, duplicates, exhibit links, and ingest state.
+5. Search the Research workspace and save at least one verified authority.
+6. Export the research memo.
+7. Open Draft Studio, optionally create a style pack, and generate a structured petition or reply.
+8. Export the draft and compare versions with the redline view.
+9. Open Strategy Engine and review best/fallback/risk lines, issue cards, and the sequencing console.
+10. Open Institutional Mode, request approval for the latest draft, review it, and inspect the audit trail and low-bandwidth brief.
+
+## Security and Hardening Notes
+
+The current codebase now includes:
+
+- startup guardrails against the default JWT secret outside development/test
+- migration-first defaults in config and `.env.example`
+- safer upload handling with a configured size limit
+- sanitized local-storage paths and safer stored file names
+- organization scoping for quote-span lookup, saved authority retrieval, quote-lock reads, and memo export
+- login throttling for repeated failed attempts
+- cookie-only browser token storage with `Secure` enabled on HTTPS
+- safer LIKE filtering to avoid wildcard manipulation in search filters
+- regex-based sequencing keyword matching to reduce false positives
+
+These hardening changes were driven by an external assessment review. Two items from that review were adjusted rather than accepted verbatim:
+
+- the search filter issue was not raw SQL injection, but it was still worth fixing as LIKE wildcard manipulation
+- the matter list path was not a classic N+1 in its current loader configuration, but it was still inefficient and is now count-aggregated plus paginated
+
+## Verification
+
+The repository has been verified with the following commands:
+
+- `make lint`
+- `make test`
+- `make build-web`
+- `./.venv/bin/ruff check apps/api tests/bootstrap tests/integration`
+- `./.venv/bin/mypy apps/api/app`
+- `./.venv/bin/pytest tests/bootstrap tests/integration -q`
+- `PATH=/usr/local/bin:$PATH COREPACK_HOME=/tmp/corepack /usr/local/bin/corepack pnpm --filter @legalos/web typecheck`
+- `PATH=/usr/local/bin:$PATH COREPACK_HOME=/tmp/corepack /usr/local/bin/corepack pnpm --filter @legalos/web build`
+
+## Tests and Evals
+
+### Current automated coverage
+
+- `tests/integration/test_quote_lock.py`
+- `tests/integration/test_research_flow.py`
+- `tests/integration/test_bundle_flow.py`
+- `tests/integration/test_workflow_phases.py`
+- `tests/integration/test_security_hardening.py`
+- `tests/e2e/research-smoke.spec.ts`
+- `tests/e2e/workflows-smoke.spec.ts`
+
+### Product eval docs
+
+See [docs/evals/citation-integrity.md](/Users/rajatyadav/LegalOS/docs/evals/citation-integrity.md), [docs/evals/quote-span-integrity.md](/Users/rajatyadav/LegalOS/docs/evals/quote-span-integrity.md), [docs/evals/draft-completeness.md](/Users/rajatyadav/LegalOS/docs/evals/draft-completeness.md), [docs/evals/strategy-boundedness.md](/Users/rajatyadav/LegalOS/docs/evals/strategy-boundedness.md), and [docs/evals/institutional-auditability.md](/Users/rajatyadav/LegalOS/docs/evals/institutional-auditability.md).
+
+## Self-Hosting Notes
+
+The local baseline is aimed at a Mac mini or Linux self-hosted deployment:
+
+- open-source/self-hostable components first
+- no hardwired paid cloud dependencies in the domain model
+- filesystem object storage works first, with future S3-compatible evolution
+- compose stack includes Postgres, Valkey, MinIO, and Tika
+- web and API can also run against an already-provisioned local stack
+
+See [docs/runbooks/self-hosting.md](/Users/rajatyadav/LegalOS/docs/runbooks/self-hosting.md) for deployment expectations and security notes.
+
+## Important Limitations
+
+- Docker Compose is documented but was not runtime-verified on this host because Docker is unavailable here.
+- Background ingest is still best-effort plus `make drain-queued`, not durable queue-backed orchestration.
+- Drafting is structured and production-usable, but still template-driven pending broader corpus and style eval work.
+- The demo corpus is intentionally narrow and does not yet represent a production-scale verified Indian case-law corpus.
+- Browser e2e specs exist but were not executed in this environment because Playwright tooling is not installed locally.
+
+## Troubleshooting
+
+- If the API refuses to start outside development, check `JWT_SECRET` and confirm `AUTO_CREATE_DB=false`.
+- If uploads remain queued after an interrupted API process, run `make drain-queued`.
+- If OCR output is sparse, confirm Tesseract is installed on the host or available in the container path.
+- If the web app builds but auth fails locally, verify `APP_URL`, `API_URL`, and CORS settings in `.env`.
+
+## Documentation
+
+- [docs/product/overview.md](/Users/rajatyadav/LegalOS/docs/product/overview.md)
+- [docs/adr/0001-architecture.md](/Users/rajatyadav/LegalOS/docs/adr/0001-architecture.md)
+- [docs/runbooks/local-dev.md](/Users/rajatyadav/LegalOS/docs/runbooks/local-dev.md)
+- [docs/runbooks/testing.md](/Users/rajatyadav/LegalOS/docs/runbooks/testing.md)
+- [IMPLEMENTATION_STATUS.md](/Users/rajatyadav/LegalOS/IMPLEMENTATION_STATUS.md)
+- [BACKLOG.md](/Users/rajatyadav/LegalOS/BACKLOG.md)
+
+## Next Priorities
+
+Post-Phase-5 work is now mostly hardening:
+
+- durable queue-backed orchestration for ingest and future AI worker execution
+- broader verified case-law and statute ingestion
+- stronger OCR and scanned-bundle scaling
+- CI-executed browser e2e and broader eval automation

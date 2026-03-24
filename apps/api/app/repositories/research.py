@@ -5,9 +5,11 @@ from uuid import UUID
 
 from sqlalchemy import and_, desc, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
 from app.domain.document import Citation, Document, DocumentChunk, QuoteSpan
 from app.domain.enums import DocumentSourceType
+from app.domain.matter import Matter
 from app.domain.research import SavedAuthority
 
 
@@ -23,6 +25,11 @@ class ResearchRow:
 class ResearchRepository:
     def __init__(self, session: AsyncSession) -> None:
         self.session = session
+
+    @staticmethod
+    def _contains_pattern(value: str) -> str:
+        escaped = value.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
+        return f"%{escaped}%"
 
     async def search(
         self,
@@ -59,12 +66,15 @@ class ResearchRepository:
         if authority_kind:
             base_stmt = base_stmt.where(Document.authority_kind == authority_kind)
         if court:
-            base_stmt = base_stmt.where(Document.court.ilike(f"%{court}%"))
+            base_stmt = base_stmt.where(
+                Document.court.ilike(self._contains_pattern(court), escape="\\")
+            )
         if issue:
+            issue_pattern = self._contains_pattern(issue)
             base_stmt = base_stmt.where(
                 or_(
-                    Document.legal_issue.ilike(f"%{issue}%"),
-                    Citation.legal_issue.ilike(f"%{issue}%"),
+                    Document.legal_issue.ilike(issue_pattern, escape="\\"),
+                    Citation.legal_issue.ilike(issue_pattern, escape="\\"),
                 )
             )
 
@@ -130,10 +140,58 @@ class ResearchRepository:
         ranked_rows.sort(key=lambda item: item.score, reverse=True)
         return ranked_rows[:limit]
 
-    async def get_saved_for_matter(self, matter_id: UUID) -> list[SavedAuthority]:
+    async def get_saved_for_matter(
+        self,
+        *,
+        matter_id: UUID,
+        organization_id: UUID,
+    ) -> list[SavedAuthority]:
         result = await self.session.execute(
             select(SavedAuthority)
-            .where(SavedAuthority.matter_id == matter_id)
+            .join(Matter, Matter.id == SavedAuthority.matter_id)
+            .where(
+                SavedAuthority.matter_id == matter_id,
+                Matter.organization_id == organization_id,
+            )
+            .options(
+                selectinload(SavedAuthority.quote_span),
+                selectinload(SavedAuthority.citation),
+            )
             .order_by(SavedAuthority.created_at.desc())
+        )
+        return list(result.scalars())
+
+    async def get_quote_span_for_organization(
+        self,
+        *,
+        quote_span_id: UUID,
+        organization_id: UUID,
+    ) -> QuoteSpan | None:
+        result = await self.session.execute(
+            select(QuoteSpan)
+            .join(Document, Document.id == QuoteSpan.document_id)
+            .where(
+                QuoteSpan.id == quote_span_id,
+                Document.organization_id == organization_id,
+            )
+            .options(selectinload(QuoteSpan.document))
+        )
+        return result.scalar_one_or_none()
+
+    async def get_quote_spans_for_organization(
+        self,
+        *,
+        quote_span_ids: list[UUID],
+        organization_id: UUID,
+    ) -> list[QuoteSpan]:
+        if not quote_span_ids:
+            return []
+        result = await self.session.execute(
+            select(QuoteSpan)
+            .join(Document, Document.id == QuoteSpan.document_id)
+            .where(
+                QuoteSpan.id.in_(quote_span_ids),
+                Document.organization_id == organization_id,
+            )
         )
         return list(result.scalars())

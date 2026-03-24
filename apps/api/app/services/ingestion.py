@@ -2,14 +2,17 @@ from __future__ import annotations
 
 import hashlib
 import logging
+import re
 from dataclasses import dataclass
-from datetime import UTC, datetime
+from datetime import UTC, date, datetime
+from pathlib import Path
 from uuid import UUID, uuid4
 
-from fastapi import UploadFile
+from fastapi import HTTPException, UploadFile, status
 from sqlalchemy import delete
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.config import get_settings
 from app.db.session import SessionLocal
 from app.domain.document import Citation, Document, DocumentChunk, QuoteSpan
 from app.domain.enums import AuthorityKind, DocumentSourceType, ProcessingStatus
@@ -21,6 +24,8 @@ from app.services.quote_lock import QuoteLockService
 from app.services.storage import LocalFilesystemStorage
 
 logger = logging.getLogger(__name__)
+UPLOAD_CHUNK_SIZE = 1024 * 1024
+SAFE_FILE_NAME_PATTERN = re.compile(r"[^A-Za-z0-9._-]+")
 
 
 @dataclass(slots=True)
@@ -35,7 +40,7 @@ class IngestionMetadata:
     court: str | None = None
     forum: str | None = None
     bench: str | None = None
-    decision_date: object | None = None
+    decision_date: date | None = None
     legal_issue: str | None = None
     source_url: str | None = None
 
@@ -52,22 +57,28 @@ async def process_document_job(
                 document_id=document_id,
                 organization_id=organization_id,
             )
-        except Exception:
+        except Exception as exc:
             logger.exception("Background document processing failed for %s", document_id)
+            await service.mark_document_failed(
+                document_id=document_id,
+                organization_id=organization_id,
+                error=str(exc),
+            )
             return
 
 
 class IngestionService:
     def __init__(self, session: AsyncSession) -> None:
         self.session = session
+        self.settings = get_settings()
         self.storage = LocalFilesystemStorage()
         self.extractor = DocumentExtractor()
         self.audit = AuditRepository(session)
         self.bundle_repository = BundleRepository(session)
 
     async def ingest_upload(self, *, file: UploadFile, metadata: IngestionMetadata) -> Document:
-        payload = await file.read()
-        file_name = file.filename or f"upload-{uuid4()}"
+        payload = await self._read_upload_payload(file)
+        file_name = self._safe_file_name(file.filename or f"upload-{uuid4()}")
         return await self.ingest_bytes(
             payload=payload,
             file_name=file_name,
@@ -76,8 +87,8 @@ class IngestionService:
         )
 
     async def queue_upload(self, *, file: UploadFile, metadata: IngestionMetadata) -> Document:
-        payload = await file.read()
-        file_name = file.filename or f"upload-{uuid4()}"
+        payload = await self._read_upload_payload(file)
+        file_name = self._safe_file_name(file.filename or f"upload-{uuid4()}")
         return await self.queue_bytes(
             payload=payload,
             file_name=file_name,
@@ -203,6 +214,24 @@ class IngestionService:
         await self.session.refresh(document)
         return document
 
+    async def mark_document_failed(
+        self,
+        *,
+        document_id: UUID,
+        organization_id: UUID,
+        error: str,
+    ) -> None:
+        document = await self.bundle_repository.get_document(
+            document_id=document_id,
+            organization_id=organization_id,
+        )
+        if document is None:
+            return
+        document.processing_status = ProcessingStatus.FAILED
+        document.processing_error = error[:4000]
+        document.processing_completed_at = datetime.now(UTC)
+        await self.session.commit()
+
     async def _create_document_record(
         self,
         *,
@@ -211,11 +240,12 @@ class IngestionService:
         content_type: str,
         metadata: IngestionMetadata,
     ) -> Document:
+        safe_file_name = self._safe_file_name(file_name)
         digest = hashlib.sha256(payload).hexdigest()
         storage_key = (
             f"{metadata.organization_id}/"
             f"{metadata.matter_id or 'public'}/"
-            f"{digest}-{file_name}"
+            f"{digest}-{safe_file_name}"
         )
         stored = self.storage.save_bytes(storage_key, payload)
         document = Document(
@@ -224,8 +254,8 @@ class IngestionService:
             created_by_user_id=metadata.created_by_user_id,
             source_type=metadata.source_type,
             processing_status=ProcessingStatus.QUEUED,
-            title=metadata.title or file_name,
-            file_name=file_name,
+            title=metadata.title or safe_file_name,
+            file_name=safe_file_name,
             content_type=content_type,
             storage_path=stored.relative_path,
             sha256=digest,
@@ -242,6 +272,32 @@ class IngestionService:
         self.session.add(document)
         await self.session.flush()
         return document
+
+    async def _read_upload_payload(self, file: UploadFile) -> bytes:
+        total_size = 0
+        chunks: list[bytes] = []
+        while True:
+            chunk = await file.read(UPLOAD_CHUNK_SIZE)
+            if not chunk:
+                break
+            total_size += len(chunk)
+            if total_size > self.settings.max_upload_size_bytes:
+                raise HTTPException(
+                    status_code=status.HTTP_413_CONTENT_TOO_LARGE,
+                    detail=(
+                        "Upload exceeds the configured size limit of "
+                        f"{self.settings.max_upload_size_bytes} bytes"
+                    ),
+                )
+            chunks.append(chunk)
+        await file.close()
+        return b"".join(chunks)
+
+    @staticmethod
+    def _safe_file_name(file_name: str) -> str:
+        candidate = Path(file_name).name.strip() or f"upload-{uuid4()}"
+        sanitized = SAFE_FILE_NAME_PATTERN.sub("_", candidate)
+        return sanitized[:255] or f"upload-{uuid4()}"
 
     async def _clear_document_derivatives(self, document_id: UUID) -> None:
         await self.bundle_repository.clear_document_artifacts(document_id)

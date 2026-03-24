@@ -3,12 +3,13 @@ from __future__ import annotations
 from uuid import UUID
 
 from fastapi import HTTPException, status
-from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.domain.document import QuoteSpan
+from app.domain.enums import DocumentSourceType
 from app.domain.research import SavedAuthority
 from app.repositories.audit import AuditRepository
+from app.repositories.matters import MatterRepository
 from app.repositories.research import ResearchRepository
 from app.schemas.research import (
     ExportMemoResponse,
@@ -24,6 +25,7 @@ class ResearchService:
     def __init__(self, session: AsyncSession) -> None:
         self.session = session
         self.repository = ResearchRepository(session)
+        self.matters = MatterRepository(session)
         self.audit = AuditRepository(session)
 
     async def search(
@@ -37,7 +39,10 @@ class ResearchService:
         issue: str | None,
         limit: int,
     ) -> ResearchSearchResponse:
-        saved = await self.repository.get_saved_for_matter(matter_id)
+        saved = await self.repository.get_saved_for_matter(
+            matter_id=matter_id,
+            organization_id=organization_id,
+        )
         saved_map = {item.quote_span_id: item.treatment for item in saved}
         results = await self.repository.search(
             organization_id=organization_id,
@@ -90,11 +95,29 @@ class ResearchService:
         actor_user_id: UUID,
         request: SaveAuthorityRequest,
     ) -> SavedAuthorityResponse:
-        quote_span = await self.session.get(QuoteSpan, request.quote_span_id)
+        matter = await self.matters.get_by_id(matter_id, organization_id)
+        if matter is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Matter not found",
+            )
+
+        quote_span = await self.repository.get_quote_span_for_organization(
+            quote_span_id=request.quote_span_id,
+            organization_id=organization_id,
+        )
         if quote_span is None:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Quote span not found",
+            )
+        if (
+            quote_span.document.source_type != DocumentSourceType.PUBLIC_LAW
+            and quote_span.document.matter_id != matter_id
+        ):
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Quote span is not available for this matter",
             )
 
         saved = SavedAuthority(
@@ -120,8 +143,23 @@ class ResearchService:
         await self.session.commit()
         return SavedAuthorityResponse.model_validate(saved, from_attributes=True)
 
-    async def export_memo(self, *, matter_id: UUID) -> ExportMemoResponse:
-        saved = await self.repository.get_saved_for_matter(matter_id)
+    async def export_memo(
+        self,
+        *,
+        matter_id: UUID,
+        organization_id: UUID,
+    ) -> ExportMemoResponse:
+        matter = await self.matters.get_by_id(matter_id, organization_id)
+        if matter is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Matter not found",
+            )
+
+        saved = await self.repository.get_saved_for_matter(
+            matter_id=matter_id,
+            organization_id=organization_id,
+        )
         if not saved:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
@@ -129,9 +167,10 @@ class ResearchService:
             )
 
         span_ids = [item.quote_span_id for item in saved]
-        quote_spans = (
-            await self.session.execute(select(QuoteSpan).where(QuoteSpan.id.in_(span_ids)))
-        ).scalars().all()
+        quote_spans = await self.repository.get_quote_spans_for_organization(
+            quote_span_ids=span_ids,
+            organization_id=organization_id,
+        )
         span_map = {item.id: item for item in quote_spans}
 
         lines = ["# Research Memo", "", f"Matter: `{matter_id}`", ""]
@@ -155,8 +194,16 @@ class ResearchService:
             content="\n".join(lines).strip() + "\n",
         )
 
-    async def quote_lock(self, *, quote_span_id: UUID) -> tuple[QuoteSpan, str]:
-        quote_span = await self.session.get(QuoteSpan, quote_span_id)
+    async def quote_lock(
+        self,
+        *,
+        quote_span_id: UUID,
+        organization_id: UUID,
+    ) -> tuple[QuoteSpan, str]:
+        quote_span = await self.repository.get_quote_span_for_organization(
+            quote_span_id=quote_span_id,
+            organization_id=organization_id,
+        )
         if quote_span is None:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,

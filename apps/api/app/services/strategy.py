@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import re
 from collections.abc import Sequence
 from pathlib import Path
 from uuid import UUID
@@ -42,7 +43,10 @@ class StrategyService:
         if matter is None:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Matter not found")
 
-        saved_authorities = await self.drafting.list_saved_authorities_for_matter(matter_id)
+        saved_authorities = await self.drafting.list_saved_authorities_for_matter(
+            matter_id=matter_id,
+            organization_id=organization_id,
+        )
         try:
             bundle = await BundleAnalysisService(self.session).get_matter_bundle(
                 matter_id=matter_id,
@@ -245,9 +249,9 @@ class StrategyService:
     @staticmethod
     def _classify_item(label: str, detail: str) -> SequencingRecommendationResponse:
         text = f"{label} {detail}".lower()
-        if any(
-            token in text
-            for token in ("hide", "suppress", "destroy", "withhold mandatory", "conceal")
+        if StrategyService._contains_phrase(
+            text,
+            ("hide", "suppress", "destroy", "withhold mandatory", "conceal"),
         ):
             return SequencingRecommendationResponse(
                 label=label,
@@ -256,9 +260,9 @@ class StrategyService:
                 reason="The phrasing suggests concealment rather than lawful sequencing.",
                 mandatory_warning=True,
             )
-        if any(
-            token in text
-            for token in (
+        if StrategyService._contains_phrase(
+            text,
+            (
                 "arrest",
                 "custody",
                 "medical",
@@ -267,7 +271,7 @@ class StrategyService:
                 "jurisdiction",
                 "notice served",
                 "age",
-            )
+            ),
         ):
             return SequencingRecommendationResponse(
                 label=label,
@@ -276,7 +280,10 @@ class StrategyService:
                 reason="This reads like a potentially mandatory or stage-critical fact.",
                 mandatory_warning=True,
             )
-        if any(token in text for token in ("record gap", "delay", "omission", "contradiction")):
+        if StrategyService._contains_phrase(
+            text,
+            ("record gap", "delay", "omission", "contradiction"),
+        ):
             return SequencingRecommendationResponse(
                 label=label,
                 bucket="explain_now",
@@ -287,9 +294,9 @@ class StrategyService:
                 ),
                 mandatory_warning=False,
             )
-        if any(
-            token in text
-            for token in ("cross", "rebuttal", "impeach", "opponent inconsistency")
+        if StrategyService._contains_phrase(
+            text,
+            ("cross", "rebuttal", "impeach", "opponent inconsistency"),
         ):
             return SequencingRecommendationResponse(
                 label=label,
@@ -304,9 +311,9 @@ class StrategyService:
                 ),
                 mandatory_warning=False,
             )
-        if any(
-            token in text
-            for token in ("internal note", "settlement posture", "bench rehearsal", "work product")
+        if StrategyService._contains_phrase(
+            text,
+            ("internal note", "settlement posture", "bench rehearsal", "work product"),
         ):
             return SequencingRecommendationResponse(
                 label=label,
@@ -321,4 +328,11 @@ class StrategyService:
             recommendation="Explain now with a bounded note and a source anchor.",
             reason="Default to timely explanation when the disclosure posture is uncertain.",
             mandatory_warning=False,
+        )
+
+    @staticmethod
+    def _contains_phrase(text: str, phrases: tuple[str, ...]) -> bool:
+        return any(
+            re.search(rf"(?<!\w){re.escape(phrase)}(?!\w)", text) is not None
+            for phrase in phrases
         )

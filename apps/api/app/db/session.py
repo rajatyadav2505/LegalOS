@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import AsyncGenerator
+from functools import lru_cache
 from importlib import import_module
 
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
@@ -8,14 +9,32 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_asyn
 from app.core.config import get_settings
 from app.db.base import Base
 
-settings = get_settings()
 
-engine = create_async_engine(
-    settings.database_url,
-    echo=settings.database_echo,
-    future=True,
-)
-SessionLocal = async_sessionmaker(bind=engine, expire_on_commit=False, class_=AsyncSession)
+@lru_cache(maxsize=1)
+def get_engine():
+    settings = get_settings()
+    return create_async_engine(
+        settings.database_url,
+        echo=settings.database_echo,
+        future=True,
+    )
+
+
+@lru_cache(maxsize=1)
+def get_session_factory() -> async_sessionmaker[AsyncSession]:
+    return async_sessionmaker(
+        bind=get_engine(),
+        expire_on_commit=False,
+        class_=AsyncSession,
+    )
+
+
+class SessionFactoryProxy:
+    def __call__(self, **kwargs: object) -> AsyncSession:
+        return get_session_factory()(**kwargs)
+
+
+SessionLocal = SessionFactoryProxy()
 
 
 async def get_session() -> AsyncGenerator[AsyncSession, None]:
@@ -37,5 +56,5 @@ async def create_all_tables() -> None:
     ):
         import_module(module_name)
 
-    async with engine.begin() as connection:
+    async with get_engine().begin() as connection:
         await connection.run_sync(Base.metadata.create_all)

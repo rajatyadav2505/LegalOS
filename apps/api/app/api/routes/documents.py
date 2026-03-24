@@ -28,22 +28,22 @@ from app.services.ingestion import (
 router = APIRouter()
 
 
-def _processing_stage(status: ProcessingStatus) -> str:
+def _processing_stage(processing_status: ProcessingStatus) -> str:
     return {
         ProcessingStatus.QUEUED: "queued",
         ProcessingStatus.PROCESSING: "processing",
         ProcessingStatus.READY: "ready",
         ProcessingStatus.FAILED: "failed",
-    }[status]
+    }[processing_status]
 
 
-def _processing_progress(status: ProcessingStatus) -> int:
+def _processing_progress(processing_status: ProcessingStatus) -> int:
     return {
         ProcessingStatus.QUEUED: 5,
         ProcessingStatus.PROCESSING: 60,
         ProcessingStatus.READY: 100,
         ProcessingStatus.FAILED: 100,
-    }[status]
+    }[processing_status]
 
 
 def _build_document_response(document: Document) -> DocumentResponse:

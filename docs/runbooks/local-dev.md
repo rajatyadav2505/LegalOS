@@ -16,6 +16,8 @@ Run the LegalOS repository locally for development in a self-hostable setup.
 ## Environment
 
 Use `.env.example` as the starting point for environment configuration.
+Keep `AUTO_CREATE_DB=false` and prefer `make migrate` so local development follows the same schema path as production.
+Keep `AUTO_SEED_DEMO=false` unless you intentionally want startup-side demo writes; the normal path is `make seed`.
 
 ## Setup
 

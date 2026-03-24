@@ -18,7 +18,7 @@ from app.domain.drafting import (
     DraftSection,
     StylePack,
 )
-from app.domain.enums import DraftDocumentType, DraftStatus
+from app.domain.enums import DocumentSourceType, DraftDocumentType, DraftStatus
 from app.domain.research import SavedAuthority
 from app.repositories.audit import AuditRepository
 from app.repositories.drafting import DraftingRepository
@@ -145,7 +145,10 @@ class DraftingService:
             organization_id=organization_id,
             matter_id=matter_id,
         )
-        saved_authorities = await self.repository.list_saved_authorities_for_matter(matter_id)
+        saved_authorities = await self.repository.list_saved_authorities_for_matter(
+            matter_id=matter_id,
+            organization_id=organization_id,
+        )
         if not request.include_saved_authorities:
             saved_authorities = []
 
@@ -389,7 +392,9 @@ class DraftingService:
         documents: list[Document],
         selected_ids: list[UUID],
     ) -> list[Document]:
-        matter_documents = [item for item in documents if item.source_type != "public_law"]
+        matter_documents = [
+            item for item in documents if item.source_type != DocumentSourceType.PUBLIC_LAW
+        ]
         if selected_ids:
             selected = [item for item in matter_documents if item.id in set(selected_ids)]
             return selected[:8]

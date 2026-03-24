@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import get_current_user, get_db_session
@@ -14,23 +14,29 @@ router = APIRouter()
 
 @router.get("", response_model=list[MatterSummaryResponse])
 async def list_matters(
+    limit: int = Query(default=50, ge=1, le=100),
+    offset: int = Query(default=0, ge=0),
     session: AsyncSession = Depends(get_db_session),
     current_user=Depends(get_current_user),
 ) -> list[MatterSummaryResponse]:
-    matters = await MatterRepository(session).list_for_organization(current_user.organization_id)
+    matters = await MatterRepository(session).list_for_organization(
+        current_user.organization_id,
+        limit=limit,
+        offset=offset,
+    )
     return [
         MatterSummaryResponse(
-            id=item.id,
-            title=item.title,
-            reference_code=item.reference_code,
-            forum=item.forum,
-            stage=item.stage,
-            status=item.status,
-            next_hearing_date=item.next_hearing_date,
-            summary=item.summary,
-            updated_at=item.updated_at,
-            document_count=len(item.documents),
-            saved_authority_count=len(item.saved_authorities),
+            id=item.matter.id,
+            title=item.matter.title,
+            reference_code=item.matter.reference_code,
+            forum=item.matter.forum,
+            stage=item.matter.stage,
+            status=item.matter.status,
+            next_hearing_date=item.matter.next_hearing_date,
+            summary=item.matter.summary,
+            updated_at=item.matter.updated_at,
+            document_count=item.document_count,
+            saved_authority_count=item.saved_authority_count,
         )
         for item in matters
     ]
