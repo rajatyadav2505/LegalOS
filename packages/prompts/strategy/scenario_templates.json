@@ -1,0 +1,19 @@
+{
+  "branches": [
+    {
+      "id": "record_gap",
+      "label": "Bench focuses on record gaps",
+      "prompt": "Emphasize missing arrest, counsel, or family-intimation records and ask for record-producing directions."
+    },
+    {
+      "id": "compliance_defense",
+      "label": "Opposite side relies on formal compliance",
+      "prompt": "Use contradictions and exact source anchors to separate formal assertions from documentary proof."
+    },
+    {
+      "id": "adverse_authority",
+      "label": "Adverse authority is raised",
+      "prompt": "Distinguish on facts, stage, forum, or safeguards actually reflected in the record."
+    }
+  ]
+}

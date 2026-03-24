@@ -1,0 +1,85 @@
+{
+  "petition": {
+    "label": "Writ Petition",
+    "sections": [
+      { "key": "case_overview", "label": "Case Overview", "required": true },
+      { "key": "facts", "label": "Facts and Chronology", "required": true },
+      { "key": "issues", "label": "Issues for Adjudication", "required": true },
+      { "key": "grounds", "label": "Grounds", "required": true },
+      { "key": "authorities", "label": "Verified Authorities", "required": true },
+      { "key": "prayer", "label": "Prayer", "required": true },
+      { "key": "annexures", "label": "Annexures", "required": true }
+    ]
+  },
+  "reply": {
+    "label": "Reply / Counter Affidavit",
+    "sections": [
+      { "key": "response_frame", "label": "Response Frame", "required": true },
+      { "key": "pointwise_reply", "label": "Pointwise Reply", "required": true },
+      { "key": "distinguishing_authorities", "label": "Distinguishing Authorities", "required": true },
+      { "key": "prayer", "label": "Prayer", "required": true }
+    ]
+  },
+  "written_submission": {
+    "label": "Written Submission",
+    "sections": [
+      { "key": "issue_matrix", "label": "Issue Matrix", "required": true },
+      { "key": "arguments", "label": "Written Arguments", "required": true },
+      { "key": "authorities", "label": "Authorities Relied On", "required": true },
+      { "key": "prayer", "label": "Relief Sought", "required": true }
+    ]
+  },
+  "application": {
+    "label": "Application",
+    "sections": [
+      { "key": "relief_sought", "label": "Relief Sought", "required": true },
+      { "key": "factual_basis", "label": "Factual Basis", "required": true },
+      { "key": "legal_basis", "label": "Legal Basis", "required": true },
+      { "key": "prayer", "label": "Prayer", "required": true }
+    ]
+  },
+  "affidavit": {
+    "label": "Affidavit",
+    "sections": [
+      { "key": "deponent_details", "label": "Deponent Details", "required": true },
+      { "key": "affirmed_facts", "label": "Affirmed Facts", "required": true },
+      { "key": "verification_clause", "label": "Verification", "required": true },
+      { "key": "annexures", "label": "Annexures", "required": true }
+    ]
+  },
+  "synopsis": {
+    "label": "Synopsis",
+    "sections": [
+      { "key": "case_overview", "label": "Case Overview", "required": true },
+      { "key": "issue_matrix", "label": "Issue Matrix", "required": true },
+      { "key": "arguments", "label": "Synopsis of Submissions", "required": true },
+      { "key": "authorities", "label": "Authorities", "required": true }
+    ]
+  },
+  "list_of_dates": {
+    "label": "List of Dates",
+    "sections": [
+      { "key": "case_overview", "label": "Matter Snapshot", "required": true },
+      { "key": "date_entries", "label": "Date Entries", "required": true },
+      { "key": "annexures", "label": "Linked Documents", "required": true }
+    ]
+  },
+  "legal_notice": {
+    "label": "Legal Notice",
+    "sections": [
+      { "key": "notice_background", "label": "Notice Background", "required": true },
+      { "key": "legal_basis", "label": "Legal Basis", "required": true },
+      { "key": "notice_demands", "label": "Demands", "required": true },
+      { "key": "annexures", "label": "Annexures", "required": true }
+    ]
+  },
+  "settlement_note": {
+    "label": "Settlement Note",
+    "sections": [
+      { "key": "settlement_background", "label": "Background", "required": true },
+      { "key": "settlement_terms", "label": "Settlement Terms", "required": true },
+      { "key": "risk_reservation", "label": "Risk and Reservation", "required": true },
+      { "key": "annexures", "label": "Supporting Materials", "required": true }
+    ]
+  }
+}

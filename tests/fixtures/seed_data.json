@@ -1,0 +1,131 @@
+{
+  "organization": {
+    "name": "Nyaya Legal Aid Demo",
+    "slug": "nyaya-legal-aid-demo"
+  },
+  "user": {
+    "email": "demo@legalos.local",
+    "full_name": "Aditi Rao",
+    "password": "DemoPass123!"
+  },
+  "matter": {
+    "title": "Seema Kumari v. State (Detention and Access to Counsel)",
+    "reference_code": "DL-LEGALOS-001",
+    "forum": "Delhi High Court",
+    "stage": "notice",
+    "next_hearing_date": "2026-04-03",
+    "summary": "Challenge to detention procedures, denial of legal assistance, and record deficiencies."
+  },
+  "documents": [
+    {
+      "source_path": "tests/fixtures/sample_matter/public_law/constitution_article_14.txt",
+      "attach_to_matter": false,
+      "source_type": "public_law",
+      "title": "Constitution of India, Article 14",
+      "authority_kind": "constitution",
+      "citation_text": "Constitution of India, art. 14",
+      "court": "Constitution of India",
+      "forum": "India",
+      "legal_issue": "equality before law",
+      "source_url": "https://www.legislative.gov.in/static/uploads/2025/08/7af1daa22d65f9d04c00ae9b9aa5a799.pdf",
+      "content_type": "text/plain"
+    },
+    {
+      "source_path": "tests/fixtures/sample_matter/public_law/constitution_article_21.txt",
+      "attach_to_matter": false,
+      "source_type": "public_law",
+      "title": "Constitution of India, Article 21",
+      "authority_kind": "constitution",
+      "citation_text": "Constitution of India, art. 21",
+      "court": "Constitution of India",
+      "forum": "India",
+      "legal_issue": "personal liberty and due process",
+      "source_url": "https://www.legislative.gov.in/static/uploads/2025/08/7af1daa22d65f9d04c00ae9b9aa5a799.pdf",
+      "content_type": "text/plain"
+    },
+    {
+      "source_path": "tests/fixtures/sample_matter/public_law/constitution_article_32.txt",
+      "attach_to_matter": false,
+      "source_type": "public_law",
+      "title": "Constitution of India, Article 32",
+      "authority_kind": "constitution",
+      "citation_text": "Constitution of India, art. 32(1)",
+      "court": "Constitution of India",
+      "forum": "India",
+      "legal_issue": "constitutional remedies",
+      "source_url": "https://www.legislative.gov.in/static/uploads/2025/08/7af1daa22d65f9d04c00ae9b9aa5a799.pdf",
+      "content_type": "text/plain"
+    },
+    {
+      "source_path": "tests/fixtures/sample_matter/public_law/constitution_article_22.txt",
+      "attach_to_matter": false,
+      "source_type": "public_law",
+      "title": "Constitution of India, Article 22",
+      "authority_kind": "constitution",
+      "citation_text": "Constitution of India, art. 22(1)-(2)",
+      "court": "Constitution of India",
+      "forum": "India",
+      "legal_issue": "arrest safeguards and legal representation",
+      "source_url": "https://www.legislative.gov.in/static/uploads/2025/08/7af1daa22d65f9d04c00ae9b9aa5a799.pdf",
+      "content_type": "text/plain"
+    },
+    {
+      "source_path": "tests/fixtures/sample_matter/public_law/constitution_article_39a.txt",
+      "attach_to_matter": false,
+      "source_type": "public_law",
+      "title": "Constitution of India, Article 39A",
+      "authority_kind": "constitution",
+      "citation_text": "Constitution of India, art. 39A",
+      "court": "Constitution of India",
+      "forum": "India",
+      "legal_issue": "equal justice and free legal aid",
+      "source_url": "https://www.legislative.gov.in/static/uploads/2025/08/7af1daa22d65f9d04c00ae9b9aa5a799.pdf",
+      "content_type": "text/plain"
+    },
+    {
+      "source_path": "tests/fixtures/sample_matter/petition_note.txt",
+      "attach_to_matter": true,
+      "source_type": "my_document",
+      "title": "Draft petition note on detention facts",
+      "authority_kind": "matter_document",
+      "legal_issue": "illegal detention and access to counsel",
+      "content_type": "text/plain"
+    },
+    {
+      "source_path": "tests/fixtures/sample_matter/opponent_reply.txt",
+      "attach_to_matter": true,
+      "source_type": "opponent_document",
+      "title": "State reply note",
+      "authority_kind": "matter_document",
+      "legal_issue": "justification for detention",
+      "content_type": "text/plain"
+    },
+    {
+      "source_path": "tests/fixtures/sample_matter/court_record.txt",
+      "attach_to_matter": true,
+      "source_type": "court_document",
+      "title": "Remand sheet extract",
+      "authority_kind": "matter_document",
+      "legal_issue": "custody record and production",
+      "content_type": "text/plain"
+    },
+    {
+      "source_path": "tests/fixtures/sample_matter/arrest_memo_extract.txt",
+      "attach_to_matter": true,
+      "source_type": "court_document",
+      "title": "Arrest memo extract",
+      "authority_kind": "matter_document",
+      "legal_issue": "custody record and family notice",
+      "content_type": "text/plain"
+    },
+    {
+      "source_path": "tests/fixtures/sample_matter/arrest_memo_office_copy.txt",
+      "attach_to_matter": true,
+      "source_type": "opponent_document",
+      "title": "Arrest memo extract office copy",
+      "authority_kind": "matter_document",
+      "legal_issue": "custody record and family notice",
+      "content_type": "text/plain"
+    }
+  ]
+}

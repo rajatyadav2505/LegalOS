@@ -1,0 +1,19 @@
+{
+  "name": "legalos",
+  "private": true,
+  "version": "0.0.0",
+  "packageManager": "pnpm@9.15.0",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "bootstrap": "make bootstrap",
+    "doctor": "make doctor",
+    "lint": "make lint",
+    "test": "make test",
+    "dev": "make dev",
+    "compose:up": "make compose-up",
+    "compose:down": "make compose-down"
+  }
+}
