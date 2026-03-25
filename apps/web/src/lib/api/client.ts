@@ -90,7 +90,8 @@ export class LegalOsApiClient {
     }
 
     try {
-      const response = await this.fetchImpl(this.url(path), {
+      // Native browser fetch can throw "Illegal invocation" when invoked off its global receiver.
+      const response = await this.fetchImpl.call(globalThis, this.url(path), {
         ...init,
         headers
       });
