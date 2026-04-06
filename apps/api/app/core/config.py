@@ -31,6 +31,11 @@ class Settings(BaseSettings):
     valkey_url: str = "redis://localhost:6379/0"
     local_storage_dir: Path = Path(".data/storage")
     max_upload_size_bytes: int = 25 * 1024 * 1024
+    hybrid_embedding_dimensions: int = 16
+    embedding_provider: str = "deterministic-local"
+    reranker_provider: str = "deterministic-local"
+    generation_provider: str = "deterministic-local"
+    generation_model_name: str = "template-v1"
 
     jwt_secret: str = "change-me-in-production"
     jwt_algorithm: str = "HS256"

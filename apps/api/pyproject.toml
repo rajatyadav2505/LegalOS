@@ -57,6 +57,12 @@ ignore = ["B008"]
 [tool.ruff.lint.per-file-ignores]
 "alembic/versions/*.py" = ["E501"]
 "app/db/base.py" = ["N805"]
+"app/domain/court_intelligence.py" = ["E501"]
+"app/integrations/indian_courts/*.py" = ["E501"]
+"app/repositories/court_intelligence.py" = ["E501"]
+"app/services/court_intelligence.py" = ["E501"]
+"app/services/intelligence_agents.py" = ["E501"]
+"../../tests/integration/test_court_intelligence_flow.py" = ["E501"]
 
 [tool.mypy]
 python_version = "3.12"

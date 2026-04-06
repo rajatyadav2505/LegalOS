@@ -46,9 +46,11 @@ async def create_all_tables() -> None:
     for module_name in (
         "app.domain.audit",
         "app.domain.bundle",
+        "app.domain.court_intelligence",
         "app.domain.drafting",
         "app.domain.document",
         "app.domain.institutional",
+        "app.domain.jobs",
         "app.domain.matter",
         "app.domain.organization",
         "app.domain.research",
