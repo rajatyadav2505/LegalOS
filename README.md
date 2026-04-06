@@ -2,11 +2,11 @@
 
 India-first litigation operating system for advocates, chambers, senior briefing teams, and DLSA or institutional legal-aid workflows.
 
-LegalOS is not a generic legal chatbot. It is a source-grounded litigation workspace built around verified research, quote-safe citation handling, matter-bundle intelligence, structured drafting, bounded strategy support, and institutional auditability.
+LegalOS is not a generic legal chatbot. It is a source-grounded litigation workspace built around verified research, quote-safe citation handling, matter-bundle intelligence, structured drafting, bounded strategy support, institutional auditability, and bounded court-intelligence ingestion from official public surfaces.
 
 ## Current Scope
 
-This repository contains a modular monolith plus worker planes with Phase 0 through Phase 5 implemented as runnable local slices:
+This repository contains a modular monolith plus worker planes with Phase 0 through Phase 6 implemented as runnable local slices:
 
 - Research and precedent engine with verified citations, exact quote spans, saved authorities, and memo export
 - Document operating system with uploads, extraction, OCR-backed image handling, chunking, quote-lock spans, and matter/public-law search
@@ -14,6 +14,7 @@ This repository contains a modular monolith plus worker planes with Phase 0 thro
 - Drafting studio with structured draft schemas, style packs, unresolved placeholders, annexure scheduling, markdown export, and redlines
 - Strategy engine with best/fallback/risk lines, issue cards, rebuttal cards, bench questions, bounded scenario branches, and lawful sequencing guidance
 - Institutional mode with approval requests, reviews, audit visibility, low-bandwidth summaries, and plain-language English/Hindi matter briefs
+- Court-intelligence layer with official-artifact ingestion, canonical court and docket models, litigant and case memory snapshots, judge and court profiles, hybrid retrieval, and a bounded orchestration worker
 
 ## Trust Rails
 
@@ -22,9 +23,12 @@ The product is designed around litigation-grade traceability:
 - No fabricated authorities, citations, or verbatim quotes
 - Exact quotes render only from stored `quote_spans` with checksums
 - Drafting uses saved verified authorities, not freehand citation insertion
+- Public court artifacts are stored as raw snapshots before normalization, with source system, fetch metadata, checksums, parser version, confidence, and verification status
+- Markdown memories are generated views only; the database remains the source of truth
 - “Hide information” is implemented as a lawful sequencing console, not concealment coaching
 - Strategy output is explicitly decision support only, not certainty or outcome prediction
 - Matter access is organization-scoped from the API boundary inward
+- Official-court connectors do not attempt captcha bypass or covert scraping
 
 ## Architecture
 
@@ -33,7 +37,7 @@ The product is designed around litigation-grade traceability:
 - `apps/web`: Next.js App Router + TypeScript frontend
 - `apps/api`: FastAPI + SQLAlchemy + Pydantic backend
 - `apps/worker-ingest`: ingest drain path for queued document processing
-- `apps/worker-ai`: placeholder worker plane boundary for later AI orchestration
+- `apps/worker-ai`: bounded orchestration worker for public-court sync, memory refresh, profile refresh, and hybrid-index jobs
 - `packages/contracts`: shared typed contracts used by the web client
 - `packages/ui`: shared UI primitives
 - `packages/prompts`: versioned prompt and template assets
@@ -42,6 +46,7 @@ The product is designed around litigation-grade traceability:
 
 - PostgreSQL is the source of truth
 - Full-text search starts in PostgreSQL
+- Hybrid retrieval combines Postgres-backed lexical candidate selection with pgvector-ready embeddings behind adapter interfaces
 - Valkey is reserved for cache, queue, and ephemeral coordination
 - Local filesystem storage is the default object-storage adapter
 - MinIO and Apache Tika are available in the local compose stack for self-hosted evolution
@@ -49,15 +54,15 @@ The product is designed around litigation-grade traceability:
 ### Product boundaries
 
 - Modular monolith first, not premature microservices
-- Worker-plane boundaries are present, but durable queue orchestration is still future work
-- Search, storage, and workflow concerns are kept behind service/repository boundaries to stay self-hostable and vendor-neutral
+- Worker-plane boundaries are present and a bounded jobs table now backs intelligence refresh flows, while keeping orchestration behind interfaces for future Temporal adoption
+- Search, storage, model-provider, and workflow concerns are kept behind service/repository boundaries to stay self-hostable and vendor-neutral
 
 ### Runtime responsibilities
 
-- Web: matter cockpit, research canvas, bundle map, draft studio, strategy workspace, and institutional dashboards
-- API: authentication, organization and matter access control, ingest orchestration, search, drafting, strategy, and audit persistence
+- Web: matter cockpit, research canvas, bundle map, court-intelligence workspace, draft studio, strategy workspace, and institutional dashboards
+- API: authentication, organization and matter access control, ingest orchestration, search, public-court normalization, memory/profile generation, and audit persistence
 - Worker ingest: queued document recovery and large-bundle catch-up processing
-- Worker AI: future boundary for provider-backed orchestration, kept separate from the domain core
+- Worker AI: bounded intelligence job execution kept separate from the domain core
 
 ## Repository Layout
 
@@ -117,6 +122,7 @@ tests/
 6. Start the API with `make dev-api`.
 7. Start the web app with `make dev-web`.
 8. If queued documents need recovery after a restart, run `make drain-queued`.
+9. If intelligence jobs remain queued, run `make drain-intelligence-jobs`.
 
 ### Core commands
 
@@ -128,6 +134,7 @@ tests/
 - `make compose-up`
 - `make compose-down`
 - `make drain-queued`
+- `make drain-intelligence-jobs`
 
 ## Configuration
 
@@ -139,6 +146,8 @@ Use [`.env.example`](/Users/rajatyadav/LegalOS/.env.example) as the baseline. Th
 - `MAX_UPLOAD_SIZE_BYTES=26214400`: default 25 MB request ceiling for direct uploads
 - `LOGIN_RATE_LIMIT_ATTEMPTS=5` and `LOGIN_RATE_LIMIT_WINDOW_SECONDS=300`: baseline login throttling
 - `LOCAL_STORAGE_DIR=.data/storage`: local filesystem object-storage adapter root
+- `EMBEDDING_PROVIDER`, `RERANKER_PROVIDER`, and `GENERATION_PROVIDER`: adapter selection for the bounded intelligence plane
+- `HYBRID_EMBEDDING_DIMENSIONS`: deterministic embedding width for the default local adapter
 
 For local development, the intended path is:
 
@@ -162,6 +171,7 @@ Use the seeded matter to walk the product vertically:
 8. Export the draft and compare versions with the redline view.
 9. Open Strategy Engine and review best/fallback/risk lines, issue cards, and the sequencing console.
 10. Open Institutional Mode, request approval for the latest draft, review it, and inspect the audit trail and low-bandwidth brief.
+11. Open the Court Intelligence workspace, import an official court artifact, and inspect the merged chronology, memory cards, and profile cards.
 
 ## Security and Hardening Notes
 
@@ -172,6 +182,8 @@ The current codebase now includes:
 - safer upload handling with a configured size limit
 - sanitized local-storage paths and safer stored file names
 - organization scoping for quote-span lookup, saved authority retrieval, quote-lock reads, and memo export
+- provenance-preserving storage and normalization for imported official court artifacts
+- organization-scoped public-court memories, profiles, and connected-matter search
 - login throttling for repeated failed attempts
 - cookie-only browser token storage with `Secure` enabled on HTTPS
 - safer LIKE filtering to avoid wildcard manipulation in search filters
@@ -192,8 +204,12 @@ The repository has been verified with the following commands:
 - `./.venv/bin/ruff check apps/api tests/bootstrap tests/integration`
 - `./.venv/bin/mypy apps/api/app`
 - `./.venv/bin/pytest tests/bootstrap tests/integration -q`
-- `PATH=/usr/local/bin:$PATH COREPACK_HOME=/tmp/corepack /usr/local/bin/corepack pnpm --filter @legalos/web typecheck`
-- `PATH=/usr/local/bin:$PATH COREPACK_HOME=/tmp/corepack /usr/local/bin/corepack pnpm --filter @legalos/web build`
+- `./.venv/bin/pytest tests/integration/test_court_intelligence_flow.py -q`
+- `PATH=/usr/local/bin:/opt/homebrew/bin:$PATH apps/web/node_modules/.bin/tsc -p packages/contracts/tsconfig.build.json`
+- `PATH=/usr/local/bin:/opt/homebrew/bin:$PATH apps/web/node_modules/.bin/tsc -p packages/ui/tsconfig.build.json`
+- `PATH=/usr/local/bin:/opt/homebrew/bin:$PATH apps/web/node_modules/.bin/tsc -p apps/web/tsconfig.json --noEmit --incremental false`
+- `PATH=/usr/local/bin:/opt/homebrew/bin:$PATH node_modules/.bin/next build`
+- `DATABASE_URL=sqlite+aiosqlite:///./.data/court-intelligence-migrate.db PYTHONPATH=apps/api ./.venv/bin/python apps/worker-ai/src/worker_ai.py --run-next`
 
 ## Tests and Evals
 
@@ -204,12 +220,14 @@ The repository has been verified with the following commands:
 - `tests/integration/test_bundle_flow.py`
 - `tests/integration/test_workflow_phases.py`
 - `tests/integration/test_security_hardening.py`
+- `tests/integration/test_court_intelligence_flow.py`
 - `tests/e2e/research-smoke.spec.ts`
 - `tests/e2e/workflows-smoke.spec.ts`
+- `tests/e2e/court-intelligence-smoke.spec.ts`
 
 ### Product eval docs
 
-See [docs/evals/citation-integrity.md](/Users/rajatyadav/LegalOS/docs/evals/citation-integrity.md), [docs/evals/quote-span-integrity.md](/Users/rajatyadav/LegalOS/docs/evals/quote-span-integrity.md), [docs/evals/draft-completeness.md](/Users/rajatyadav/LegalOS/docs/evals/draft-completeness.md), [docs/evals/strategy-boundedness.md](/Users/rajatyadav/LegalOS/docs/evals/strategy-boundedness.md), and [docs/evals/institutional-auditability.md](/Users/rajatyadav/LegalOS/docs/evals/institutional-auditability.md).
+See [docs/evals/citation-integrity.md](/Users/rajatyadav/LegalOS/docs/evals/citation-integrity.md), [docs/evals/quote-span-integrity.md](/Users/rajatyadav/LegalOS/docs/evals/quote-span-integrity.md), [docs/evals/chronology-fidelity.md](/Users/rajatyadav/LegalOS/docs/evals/chronology-fidelity.md), [docs/evals/memory-grounding.md](/Users/rajatyadav/LegalOS/docs/evals/memory-grounding.md), [docs/evals/profile-safety.md](/Users/rajatyadav/LegalOS/docs/evals/profile-safety.md), [docs/evals/retrieval-relevance.md](/Users/rajatyadav/LegalOS/docs/evals/retrieval-relevance.md), [docs/evals/missing-record-detection.md](/Users/rajatyadav/LegalOS/docs/evals/missing-record-detection.md), [docs/evals/source-attribution-integrity.md](/Users/rajatyadav/LegalOS/docs/evals/source-attribution-integrity.md), [docs/evals/draft-completeness.md](/Users/rajatyadav/LegalOS/docs/evals/draft-completeness.md), [docs/evals/strategy-boundedness.md](/Users/rajatyadav/LegalOS/docs/evals/strategy-boundedness.md), and [docs/evals/institutional-auditability.md](/Users/rajatyadav/LegalOS/docs/evals/institutional-auditability.md).
 
 ## Self-Hosting Notes
 
@@ -220,13 +238,14 @@ The local baseline is aimed at a Mac mini or Linux self-hosted deployment:
 - filesystem object storage works first, with future S3-compatible evolution
 - compose stack includes Postgres, Valkey, MinIO, and Tika
 - web and API can also run against an already-provisioned local stack
+- official court ingestion supports lawful feeds and user-assisted imports first; captcha-protected surfaces require manual or operator-assisted paths rather than bypass
 
 See [docs/runbooks/self-hosting.md](/Users/rajatyadav/LegalOS/docs/runbooks/self-hosting.md) for deployment expectations and security notes.
 
 ## Important Limitations
 
 - Docker Compose is documented but was not runtime-verified on this host because Docker is unavailable here.
-- Background ingest is still best-effort plus `make drain-queued`, not durable queue-backed orchestration.
+- Official-court coverage is still selective and grounded in user-assisted imports plus non-protected surfaces; broader connector coverage remains future work.
 - Drafting is structured and production-usable, but still template-driven pending broader corpus and style eval work.
 - The demo corpus is intentionally narrow and does not yet represent a production-scale verified Indian case-law corpus.
 - Browser e2e specs exist but were not executed in this environment because Playwright tooling is not installed locally.
@@ -235,14 +254,24 @@ See [docs/runbooks/self-hosting.md](/Users/rajatyadav/LegalOS/docs/runbooks/self
 
 - If the API refuses to start outside development, check `JWT_SECRET` and confirm `AUTO_CREATE_DB=false`.
 - If uploads remain queued after an interrupted API process, run `make drain-queued`.
+- If court-intelligence refresh jobs remain queued, run `make drain-intelligence-jobs`.
 - If OCR output is sparse, confirm Tesseract is installed on the host or available in the container path.
+- If an official import does not normalize as expected, inspect the raw snapshot and parser-run metadata before retrying.
 - If the web app builds but auth fails locally, verify `APP_URL`, `API_URL`, and CORS settings in `.env`.
 
 ## Documentation
 
 - [docs/product/overview.md](/Users/rajatyadav/LegalOS/docs/product/overview.md)
 - [docs/adr/0001-architecture.md](/Users/rajatyadav/LegalOS/docs/adr/0001-architecture.md)
+- [docs/adr/0002-public-data-ingestion-strategy.md](/Users/rajatyadav/LegalOS/docs/adr/0002-public-data-ingestion-strategy.md)
+- [docs/adr/0003-bounded-intelligence-orchestration.md](/Users/rajatyadav/LegalOS/docs/adr/0003-bounded-intelligence-orchestration.md)
+- [docs/adr/0004-litigant-memory-design.md](/Users/rajatyadav/LegalOS/docs/adr/0004-litigant-memory-design.md)
+- [docs/adr/0005-profile-guardrails.md](/Users/rajatyadav/LegalOS/docs/adr/0005-profile-guardrails.md)
+- [docs/adr/0006-hybrid-retrieval-architecture.md](/Users/rajatyadav/LegalOS/docs/adr/0006-hybrid-retrieval-architecture.md)
 - [docs/runbooks/local-dev.md](/Users/rajatyadav/LegalOS/docs/runbooks/local-dev.md)
+- [docs/runbooks/importing-official-artifacts.md](/Users/rajatyadav/LegalOS/docs/runbooks/importing-official-artifacts.md)
+- [docs/runbooks/refreshing-memory-and-profiles.md](/Users/rajatyadav/LegalOS/docs/runbooks/refreshing-memory-and-profiles.md)
+- [docs/runbooks/troubleshooting-connector-failures.md](/Users/rajatyadav/LegalOS/docs/runbooks/troubleshooting-connector-failures.md)
 - [docs/runbooks/testing.md](/Users/rajatyadav/LegalOS/docs/runbooks/testing.md)
 - [WindowsSetup.md](/Users/rajatyadav/LegalOS/WindowsSetup.md)
 - [IMPLEMENTATION_STATUS.md](/Users/rajatyadav/LegalOS/IMPLEMENTATION_STATUS.md)
@@ -250,9 +279,10 @@ See [docs/runbooks/self-hosting.md](/Users/rajatyadav/LegalOS/docs/runbooks/self
 
 ## Next Priorities
 
-Post-Phase-5 work is now mostly hardening:
+Post-Phase-6 work is now mostly broadening and hardening:
 
-- durable queue-backed orchestration for ingest and future AI worker execution
-- broader verified case-law and statute ingestion
+- broader official connector coverage and normalization depth across Indian courts
+- richer descriptive profiling windows and connected-matter heuristics
+- pgvector-backed production validation against a live Postgres deployment
 - stronger OCR and scanned-bundle scaling
 - CI-executed browser e2e and broader eval automation

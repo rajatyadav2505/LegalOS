@@ -87,7 +87,24 @@ Delivered:
 - Plain-language English and Hindi matter summaries for beneficiary or coordinator use
 - Low-bandwidth brief mode for constrained device or network conditions
 
-## Post-Phase-5 Hardening
+## Phase 6: Court Intelligence
+
+Status: `complete`
+
+Delivered:
+
+- Bounded orchestration foundation with `jobs`, `job_attempts`, `job_artifacts`, `prompt_runs`, and `model_runs`
+- Typed job payloads, idempotency keys, retries, failure states, and audit-aware sensitive job handling in the AI worker plane
+- Canonical court-intelligence models for courts, benches, judges, external cases, parties, counsels, events, listings, filings, deadlines, caveats, provenance, memories, profiles, and hybrid index entries
+- Official-artifact connectors and user-assisted import adapters for district eCourts, High Court Services, eCourts judgments, NJDG, and Supreme Court India surfaces without captcha bypass
+- Raw snapshot ingestion with stored payloads, parser runs, provenance fields, and normalization into canonical records
+- Litigant and case memory generation with markdown artifacts as derived views and the database as the source of truth
+- Judge and court profile snapshots with freshness, confidence, sample-size, and descriptive guardrails
+- Merged chronology, hearing delta, filing lineage, connected matters, and hybrid retrieval APIs
+- Matter cockpit public-docket panel plus a new court-intelligence workspace in the web app
+- Integration and browser smoke coverage for the new vertical slice
+
+## Post-Phase-6 Hardening
 
 Status: `in_progress`
 
@@ -106,8 +123,9 @@ Delivered:
 
 - Docker is still unavailable on this host, so compose services remain documented but not runtime-verified in this environment.
 - The demo corpus is still intentionally narrow and focused on constitutional safeguards plus a synthetic detention bundle; broader verified case-law ingestion is still pending.
-- Background ingest is best-effort FastAPI `BackgroundTasks` plus manual worker draining, not durable queue-backed orchestration.
+- General ingest is still best-effort FastAPI `BackgroundTasks`, while the court-intelligence slice now uses bounded job orchestration through `apps/worker-ai`.
 - Bundle analysis is recomputed at matter scope after each processed document; large-bundle scaling still needs more granular job orchestration.
+- Official public-court coverage currently favors user-assisted imports and non-protected surfaces; deeper connector breadth remains future work.
 - Draft generation is deterministic and structured, but still template-driven pending a broader chamber-style corpus and eval suite.
 - Browser e2e remains partially scaffolded and was not executed in this environment because Playwright tooling is not installed locally.
 
@@ -121,11 +139,16 @@ Delivered:
 - `./.venv/bin/pytest tests/bootstrap tests/integration -q`
 - `./.venv/bin/pytest tests/integration/test_workflow_phases.py -q`
 - `./.venv/bin/pytest tests/integration/test_security_hardening.py -q`
-- `PATH=/usr/local/bin:$PATH COREPACK_HOME=/tmp/corepack /usr/local/bin/corepack pnpm --filter @legalos/web typecheck`
-- `PATH=/usr/local/bin:$PATH COREPACK_HOME=/tmp/corepack /usr/local/bin/corepack pnpm --filter @legalos/web build`
+- `./.venv/bin/pytest tests/integration/test_court_intelligence_flow.py -q`
+- `PATH=/usr/local/bin:/opt/homebrew/bin:$PATH apps/web/node_modules/.bin/tsc -p packages/contracts/tsconfig.build.json`
+- `PATH=/usr/local/bin:/opt/homebrew/bin:$PATH apps/web/node_modules/.bin/tsc -p packages/ui/tsconfig.build.json`
+- `PATH=/usr/local/bin:/opt/homebrew/bin:$PATH apps/web/node_modules/.bin/tsc -p apps/web/tsconfig.json --noEmit --incremental false`
+- `PATH=/usr/local/bin:/opt/homebrew/bin:$PATH node_modules/.bin/next build`
 - `cd apps/api && DATABASE_URL=sqlite+aiosqlite:///../../.data/migrate-phase345-smoke.db ../../.venv/bin/alembic upgrade head`
 - `cd apps/api && DATABASE_URL=sqlite+aiosqlite:///../../.data/migrate-phase2-final.db ../../.venv/bin/alembic upgrade head`
+- `cd apps/api && DATABASE_URL=sqlite+aiosqlite:///../../.data/court-intelligence-migrate.db ../../.venv/bin/alembic upgrade head`
 - `PYTHONPATH=apps/api ./.venv/bin/python apps/worker-ingest/src/worker_ingest.py --help`
+- `DATABASE_URL=sqlite+aiosqlite:///./.data/court-intelligence-migrate.db PYTHONPATH=apps/api ./.venv/bin/python apps/worker-ai/src/worker_ai.py --run-next`
 - `cd apps/api && DATABASE_URL=sqlite+aiosqlite:///../../.data/run-smoke.db AUTO_CREATE_DB=true ../../.venv/bin/uvicorn app.main:app --host 127.0.0.1 --port 8010`
 - `curl -s http://127.0.0.1:8010/api/v1/health` -> `{"message":"ok"}`
 - `PATH=/usr/local/bin:$PATH COREPACK_HOME=/tmp/corepack /usr/local/bin/corepack pnpm --filter @legalos/web exec next start --hostname 127.0.0.1 --port 3000`
@@ -133,4 +156,4 @@ Delivered:
 
 ## Immediate Next Step
 
-Harden post-Phase-5 operations: durable workflow execution, broader verified corpus ingestion, and stronger self-hosted runtime verification.
+Broaden post-Phase-6 court-intelligence coverage: expand official connectors, production-validate pgvector-backed retrieval on Postgres, and deepen descriptive operational analytics without compromising provenance or guardrails.

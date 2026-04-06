@@ -1,0 +1,16 @@
+{
+  "version": "v1",
+  "hybrid_retrieval": {
+    "candidate_policy": "Use lexical filtering first, then semantic scoring and reranking through adapters.",
+    "entities": [
+      "document",
+      "case_event",
+      "case_filing",
+      "case_memory",
+      "litigant_memory",
+      "judge_profile",
+      "court_profile"
+    ],
+    "guardrail": "Return evidence-bearing entries with metadata needed for provenance review."
+  }
+}

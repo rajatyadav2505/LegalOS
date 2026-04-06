@@ -6,7 +6,7 @@ The product is not a generic legal chatbot. It is a source-grounded working syst
 
 ## Current Product Baseline
 
-Phase 0 through Phase 5 are implemented in this repository:
+Phase 0 through Phase 6 are implemented in this repository:
 
 - authenticated matter access via FastAPI JWT login
 - matter index and cockpit in Next.js
@@ -20,6 +20,7 @@ Phase 0 through Phase 5 are implemented in this repository:
 - structured draft generation with style packs, annexures, redlines, and unresolved placeholders
 - strategy workspace with bounded scenario branches, issue cards, and sequencing guidance
 - institutional dashboard with approvals, audit visibility, low-bandwidth mode, and plain-language summaries
+- public-court ingestion, canonical dockets, merged chronology, litigant and case memory, judge and court profiles, and hybrid retrieval across public and private records
 
 ## Core User Problems
 
@@ -51,6 +52,10 @@ Provide controlled scenario trees, issue cards, and argument sets for attack, de
 
 Support auditability, approval workflows, multilingual/plain-language outputs, low-bandwidth UX, urgency posture, and role-sensitive access control for legal-aid and institutional defense contexts.
 
+### Court Intelligence
+
+Import official public-court artifacts through lawful channels, normalize them into canonical docket records, and expose merged chronology, filing lineage, litigant memory, case memory, connected matters, and descriptive judge/court profiles with visible provenance and freshness.
+
 ## Trust Rules
 
 - Every shown proposition needs a source id, citation, and paragraph or page anchor.
@@ -58,6 +63,8 @@ Support auditability, approval workflows, multilingual/plain-language outputs, l
 - “Hide information” requests must be implemented as lawful sequencing guidance with disclosure safeguards.
 - Institutional mode must surface more auditability and approval context than private mode.
 - No hard dependency on proprietary model vendors in the domain model.
+- Public-court connectors must not attempt captcha bypass, covert scraping, or unbounded agent behavior.
+- Markdown memory files are generated views, not the source of truth.
 
 ## Demo Corpus
 

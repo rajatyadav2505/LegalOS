@@ -31,6 +31,7 @@ Keep `AUTO_SEED_DEMO=false` unless you intentionally want startup-side demo writ
 6. Start the API with `make dev-api`.
 7. Start the web app with `make dev-web`.
 8. If documents remain queued after an API restart, process them with `make drain-queued`.
+9. If intelligence refresh jobs remain queued after an API restart, process them with `make drain-intelligence-jobs`.
 
 The seeded demo login is:
 
@@ -50,6 +51,7 @@ The seeded demo login is:
 9. Open Strategy Engine and review issue cards, scenario branches, and sequencing guidance.
 10. Open Institutional Mode, request approval for the latest draft, and review the resulting audit trail.
 11. Export the memo from the Research workspace.
+12. Open the Court Intelligence workspace, import an official court artifact, and inspect chronology, memory, and profile cards.
 
 ## Acceptance Checks
 
@@ -64,6 +66,8 @@ The seeded demo login is:
 - Institutional approval request and review flows persist and appear in the dashboard audit trail.
 - Low-bandwidth institutional mode renders a usable brief.
 - Queued documents can be recovered with `make drain-queued`.
+- Imported official court artifacts normalize into an external case with provenance.
+- Court-intelligence jobs can be recovered with `make drain-intelligence-jobs`.
 
 ## Operational Notes
 
@@ -72,4 +76,5 @@ The seeded demo login is:
 - Do not depend on paid cloud services for the baseline development path.
 - Docker is required for `make compose-up`, but the API and web app can still be developed against an existing local Postgres/Valkey stack if needed.
 - Background ingest is currently best-effort `BackgroundTasks`; the worker drain command is the supported recovery path until durable queue orchestration lands.
+- The court-intelligence slice uses bounded jobs in `apps/worker-ai`, but public-court ingestion still favors lawful feeds and user-assisted imports over automated access to protected portals.
 - Drafting is structured and deterministic; broader style fidelity will improve as the verified corpus expands.

@@ -7,7 +7,7 @@ COREPACK := $(shell command -v corepack 2>/dev/null || echo /usr/local/bin/corep
 NODE_BIN_DIR := $(shell dirname "$$(command -v node 2>/dev/null || echo /usr/local/bin/node)")
 PNPM := PATH=$(NODE_BIN_DIR):$$PATH COREPACK_HOME=/tmp/corepack $(COREPACK) pnpm
 
-.PHONY: help bootstrap doctor setup lint test dev dev-api dev-web build-web e2e seed migrate drain-queued compose-up compose-down compose-logs
+.PHONY: help bootstrap doctor setup lint test dev dev-api dev-web build-web e2e seed migrate drain-queued drain-intelligence-jobs compose-up compose-down compose-logs
 
 help:
 	@printf '%s\n' 'Targets:'
@@ -24,6 +24,7 @@ help:
 	@printf '%s\n' '  seed         Apply demo seed data through the API package'
 	@printf '%s\n' '  migrate      Apply Alembic migrations for the API service'
 	@printf '%s\n' '  drain-queued Drain queued document-ingest work through the worker plane'
+	@printf '%s\n' '  drain-intelligence-jobs Drain bounded court-intelligence jobs through the AI worker plane'
 	@printf '%s\n' '  compose-up   Start Postgres, Valkey, MinIO, and Tika'
 	@printf '%s\n' '  compose-down Stop the local infrastructure stack'
 
@@ -69,6 +70,9 @@ migrate:
 
 drain-queued:
 	@PYTHONPATH=apps/api ./.venv/bin/python apps/worker-ingest/src/worker_ingest.py --drain-queued --limit 25
+
+drain-intelligence-jobs:
+	@PYTHONPATH=apps/api ./.venv/bin/python apps/worker-ai/src/worker_ai.py --drain --limit 25
 
 compose-up:
 	@docker compose -f $(COMPOSE_FILE) up -d

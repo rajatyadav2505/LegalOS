@@ -1,0 +1,25 @@
+{
+  "version": "v1",
+  "judge_profile": {
+    "required_fields": [
+      "sample_size",
+      "freshness_timestamp",
+      "confidence_band",
+      "hearing_load",
+      "adjournment_share",
+      "recent_cause_list_density"
+    ],
+    "guardrail": "Describe operations only. Do not imply deterministic outcome prediction."
+  },
+  "court_profile": {
+    "required_fields": [
+      "sample_size",
+      "freshness_timestamp",
+      "confidence_band",
+      "listing_depth",
+      "order_upload_lag_proxy",
+      "pendency_context"
+    ],
+    "guardrail": "Suppress low-coverage or stale metrics when confidence is inadequate."
+  }
+}

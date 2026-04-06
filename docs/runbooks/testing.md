@@ -8,8 +8,8 @@ Define the testing strategy for a trust-sensitive litigation product.
 
 - Unit tests for domain services and validation
 - Integration tests for API/database boundaries
-- End-to-end tests for upload, research, drafting, strategy, and institutional flows
-- Evals for citation integrity, quote-lock behavior, retrieval relevance, contradiction detection, draft completeness, sequencing safety, and institutional auditability
+- End-to-end tests for upload, research, drafting, strategy, institutional, and court-intelligence flows
+- Evals for citation integrity, quote-lock behavior, chronology fidelity, memory grounding, retrieval relevance, contradiction detection, draft completeness, sequencing safety, profile safety, and institutional auditability
 
 ## Early Testing Priorities
 
@@ -23,6 +23,7 @@ Define the testing strategy for a trust-sensitive litigation product.
 - Approval request and review persistence plus audit event emission
 - Plain-language summaries and low-bandwidth brief rendering
 - Queued-ingest visibility and operator recovery
+- Official artifact import, normalization, chronology merge, memory generation, hybrid retrieval, and profile snapshot rendering
 - Failure paths for missing spans, unsupported file types, and empty searches
 
 ## Current Commands
@@ -33,8 +34,9 @@ Define the testing strategy for a trust-sensitive litigation product.
 - `./.venv/bin/ruff check apps/api tests/bootstrap tests/integration`
 - `./.venv/bin/mypy apps/api/app`
 - `./.venv/bin/pytest tests/bootstrap tests/integration -q`
-- `PATH=/usr/local/bin:$PATH COREPACK_HOME=/tmp/corepack /usr/local/bin/corepack pnpm --filter @legalos/web typecheck`
-- `PATH=/usr/local/bin:$PATH COREPACK_HOME=/tmp/corepack /usr/local/bin/corepack pnpm --filter @legalos/web build`
+- `./.venv/bin/pytest tests/integration/test_court_intelligence_flow.py -q`
+- `PATH=/usr/local/bin:/opt/homebrew/bin:$PATH apps/web/node_modules/.bin/tsc -p apps/web/tsconfig.json --noEmit --incremental false`
+- `PATH=/usr/local/bin:/opt/homebrew/bin:$PATH node_modules/.bin/next build`
 
 ## Current Coverage
 
@@ -44,13 +46,15 @@ Define the testing strategy for a trust-sensitive litigation product.
 - `tests/integration/test_bundle_flow.py`: chronology, contradictions, duplicates, exhibit links, and queued-ingest status
 - `tests/integration/test_workflow_phases.py`: drafting, style packs, redlines, strategy guardrails, and institutional approvals
 - `tests/integration/test_security_hardening.py`: tenant isolation, upload-size enforcement, and login throttling
+- `tests/integration/test_court_intelligence_flow.py`: official artifact import, merged chronology, memory/profile refresh, and hybrid search
 - `tests/e2e/research-smoke.spec.ts`: browser happy-path placeholder for Playwright wiring
 - `tests/e2e/workflows-smoke.spec.ts`: browser-level drafting, strategy, and institutional workflow smoke
+- `tests/e2e/court-intelligence-smoke.spec.ts`: browser-level court-intelligence happy path placeholder
 
 ## Current Gap
 
 - Browser e2e remains scaffolded and unexecuted in this environment because Playwright tooling is not installed locally.
-- Accessibility and large-document ingestion evals are documented but not yet run automatically in CI.
+- Accessibility, large-document ingestion, and court-intelligence evals are documented but not yet run automatically in CI.
 
 ## Non-Negotiable Rules
 

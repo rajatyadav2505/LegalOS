@@ -1,0 +1,29 @@
+{
+  "version": "v1",
+  "litigant_memory": {
+    "required_sections": [
+      "Canonical Name",
+      "Aliases",
+      "Role History",
+      "Counsel History",
+      "Recurring Claims And Defenses",
+      "Contradiction Notes",
+      "Latest Orders",
+      "Open Deadlines"
+    ],
+    "rule": "Reject unsupported assertions and include source references for every non-trivial line."
+  },
+  "case_memory": {
+    "required_sections": [
+      "Case Identifiers",
+      "Court And Bench",
+      "Party Lineup",
+      "Counsel Lineup",
+      "Full Chronology",
+      "Filings",
+      "Order And Judgment History",
+      "Next Actionable Step"
+    ],
+    "rule": "Use normalized case state as the source of truth and keep markdown as a generated view."
+  }
+}
