@@ -4,16 +4,28 @@ import {
   ApprovalSchema,
   ApiErrorSchema,
   BundleMapSchema,
+  CasePartySummarySchema,
+  ConnectedMatterSchema,
   DraftDocumentSchema,
   DraftExportResponseSchema,
   DraftGenerateRequestSchema,
   DraftRedlineSchema,
   DocumentResponseSchema,
+  ExternalCaseLinkRequestSchema,
+  ExternalCaseSummarySchema,
+  FilingLineageItemSchema,
+  HearingDeltaSchema,
+  HybridSearchSchema,
   InstitutionalDashboardSchema,
+  JobSchema,
   LoginRequestSchema,
   LoginResponseSchema,
   MatterDetailSchema,
+  MatterExternalCaseListSchema,
+  MemorySnapshotSchema,
+  MergedChronologyItemSchema,
   MatterListSchema,
+  ProfileSnapshotSchema,
   ResearchMemoResponseSchema,
   ResearchSaveRequestSchema,
   ResearchSaveResponseSchema,
@@ -29,16 +41,28 @@ import {
   type ApprovalCreateRequest,
   type ApprovalReviewRequest,
   type BundleMap,
+  type CasePartySummary,
+  type ConnectedMatter,
   type DraftDocument,
   type DraftExportResponse,
   type DraftGenerateRequest,
   type DraftRedline,
   type DocumentResponse,
+  type ExternalCaseLinkRequest,
+  type ExternalCaseSummary,
+  type FilingLineageItem,
+  type HearingDelta,
+  type HybridSearch,
   type InstitutionalDashboard,
+  type Job,
   type LoginRequest,
   type LoginResponse,
   type MatterDetail,
+  type MatterExternalCaseList,
+  type MemorySnapshot,
+  type MergedChronologyItem,
   type MatterSummary,
+  type ProfileSnapshot,
   type ResearchMemoResponse,
   type ResearchSaveRequest,
   type ResearchSaveResponse,
@@ -143,6 +167,218 @@ export class LegalOsApiClient {
 
   async getMatter(matterId: string): Promise<ApiResult<MatterDetail>> {
     return this.request(`/api/v1/matters/${matterId}`, MatterDetailSchema);
+  }
+
+  async getMatterExternalCases(matterId: string): Promise<ApiResult<MatterExternalCaseList>> {
+    return this.request(
+      `/api/v1/matters/${matterId}/external-cases`,
+      MatterExternalCaseListSchema
+    );
+  }
+
+  async getExternalCaseParties(externalCaseId: string): Promise<ApiResult<CasePartySummary[]>> {
+    return this.request(`/api/v1/external-cases/${externalCaseId}/parties`, {
+      parse: (data: unknown) => CasePartySummarySchema.array().parse(data)
+    });
+  }
+
+  async linkExternalCase(
+    matterId: string,
+    payload: ExternalCaseLinkRequest
+  ): Promise<ExternalCaseSummary> {
+    const body = ExternalCaseLinkRequestSchema.parse(payload);
+    const result = await this.request(
+      `/api/v1/matters/${matterId}/external-cases/link`,
+      ExternalCaseSummarySchema,
+      {
+        method: "POST",
+        body: JSON.stringify(body),
+        headers: {
+          "Content-Type": "application/json"
+        }
+      }
+    );
+
+    if (!result.ok) {
+      throw new ApiClientError(result.message, result.status);
+    }
+
+    return result.data;
+  }
+
+  async importExternalCaseArtifact(
+    matterId: string,
+    payload: {
+      sourceSystem: ExternalCaseLinkRequest["source_system"];
+      artifactKind: string;
+      file: File;
+      sourceUrl?: string | null;
+      observedAt?: string | null;
+      externalCaseId?: string | null;
+    }
+  ): Promise<ExternalCaseSummary> {
+    const formData = new FormData();
+    formData.set("source_system", payload.sourceSystem);
+    formData.set("artifact_kind", payload.artifactKind);
+    if (payload.sourceUrl) {
+      formData.set("source_url", payload.sourceUrl);
+    }
+    if (payload.observedAt) {
+      formData.set("observed_at", payload.observedAt);
+    }
+    if (payload.externalCaseId) {
+      formData.set("external_case_id", payload.externalCaseId);
+    }
+    formData.set("file", payload.file);
+
+    const result = await this.request(
+      `/api/v1/matters/${matterId}/external-cases/import`,
+      ExternalCaseSummarySchema,
+      {
+        method: "POST",
+        body: formData
+      }
+    );
+
+    if (!result.ok) {
+      throw new ApiClientError(result.message, result.status);
+    }
+
+    return result.data;
+  }
+
+  async syncExternalCase(matterId: string, externalCaseId: string): Promise<Job> {
+    const result = await this.request(
+      `/api/v1/external-cases/${externalCaseId}/sync?matter_id=${matterId}`,
+      JobSchema,
+      {
+        method: "POST"
+      }
+    );
+
+    if (!result.ok) {
+      throw new ApiClientError(result.message, result.status);
+    }
+
+    return result.data;
+  }
+
+  async getMergedChronology(matterId: string): Promise<ApiResult<MergedChronologyItem[]>> {
+    return this.request(`/api/v1/matters/${matterId}/chronology`, {
+      parse: (data: unknown) => MergedChronologyItemSchema.array().parse(data)
+    });
+  }
+
+  async getHearingDelta(matterId: string): Promise<ApiResult<HearingDelta>> {
+    return this.request(`/api/v1/matters/${matterId}/hearing-delta`, HearingDeltaSchema);
+  }
+
+  async getFilingLineage(matterId: string): Promise<ApiResult<FilingLineageItem[]>> {
+    return this.request(`/api/v1/matters/${matterId}/filing-lineage`, {
+      parse: (data: unknown) => FilingLineageItemSchema.array().parse(data)
+    });
+  }
+
+  async getPartyMemory(partyId: string): Promise<ApiResult<MemorySnapshot>> {
+    return this.request(`/api/v1/parties/${partyId}/memory`, MemorySnapshotSchema);
+  }
+
+  async refreshPartyMemory(partyId: string): Promise<Job> {
+    const result = await this.request(`/api/v1/parties/${partyId}/memory/refresh`, JobSchema, {
+      method: "POST"
+    });
+
+    if (!result.ok) {
+      throw new ApiClientError(result.message, result.status);
+    }
+
+    return result.data;
+  }
+
+  async getCaseMemory(externalCaseId: string): Promise<ApiResult<MemorySnapshot>> {
+    return this.request(`/api/v1/external-cases/${externalCaseId}/memory`, MemorySnapshotSchema);
+  }
+
+  async refreshCaseMemory(
+    externalCaseId: string,
+    matterId?: string | null
+  ): Promise<Job> {
+    const query = matterId ? `?matter_id=${matterId}` : "";
+    const result = await this.request(
+      `/api/v1/external-cases/${externalCaseId}/memory/refresh${query}`,
+      JobSchema,
+      {
+        method: "POST"
+      }
+    );
+
+    if (!result.ok) {
+      throw new ApiClientError(result.message, result.status);
+    }
+
+    return result.data;
+  }
+
+  async getJudgeProfile(judgeId: string): Promise<ApiResult<ProfileSnapshot>> {
+    return this.request(`/api/v1/judges/${judgeId}/profile`, ProfileSnapshotSchema);
+  }
+
+  async refreshJudgeProfile(judgeId: string): Promise<Job> {
+    const result = await this.request(`/api/v1/judges/${judgeId}/profile/refresh`, JobSchema, {
+      method: "POST"
+    });
+
+    if (!result.ok) {
+      throw new ApiClientError(result.message, result.status);
+    }
+
+    return result.data;
+  }
+
+  async getCourtProfile(courtId: string): Promise<ApiResult<ProfileSnapshot>> {
+    return this.request(`/api/v1/courts/${courtId}/profile`, ProfileSnapshotSchema);
+  }
+
+  async refreshCourtProfile(courtId: string): Promise<Job> {
+    const result = await this.request(`/api/v1/courts/${courtId}/profile/refresh`, JobSchema, {
+      method: "POST"
+    });
+
+    if (!result.ok) {
+      throw new ApiClientError(result.message, result.status);
+    }
+
+    return result.data;
+  }
+
+  async searchHybrid(
+    query: string,
+    options?: { matterId?: string | null; limit?: number }
+  ): Promise<ApiResult<HybridSearch>> {
+    const params = new URLSearchParams({ q: query });
+    if (options?.matterId) {
+      params.set("matter_id", options.matterId);
+    }
+    if (options?.limit) {
+      params.set("limit", String(options.limit));
+    }
+    return this.request(`/api/v1/search/hybrid?${params.toString()}`, HybridSearchSchema);
+  }
+
+  async getConnectedMatters(
+    options?: { matterId?: string | null; externalCaseId?: string | null }
+  ): Promise<ApiResult<ConnectedMatter[]>> {
+    const params = new URLSearchParams();
+    if (options?.matterId) {
+      params.set("matter_id", options.matterId);
+    }
+    if (options?.externalCaseId) {
+      params.set("external_case_id", options.externalCaseId);
+    }
+    const query = params.toString();
+    return this.request(`/api/v1/search/connected-matters${query ? `?${query}` : ""}`, {
+      parse: (data: unknown) => ConnectedMatterSchema.array().parse(data)
+    });
   }
 
   async getBundleMap(matterId: string): Promise<ApiResult<BundleMap>> {

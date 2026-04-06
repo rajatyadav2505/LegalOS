@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import type { MatterDetail } from "@legalos/contracts";
+import type { ExternalCaseSummary, MatterDetail } from "@legalos/contracts";
 import { Badge, Button, Card } from "@legalos/ui";
 import { createBrowserApiClient } from "@/lib/api/client";
 
@@ -15,17 +15,27 @@ function formatDate(value: string | null | undefined) {
 
 export function MatterCockpit({ matterId }: { matterId: string }) {
   const [matter, setMatter] = useState<MatterDetail | null>(null);
+  const [publicCase, setPublicCase] = useState<ExternalCaseSummary | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const api = createBrowserApiClient();
-    void api.getMatter(matterId).then((result) => {
-      if (result.ok) {
-        setMatter(result.data);
-        return;
+    void Promise.all([api.getMatter(matterId), api.getMatterExternalCases(matterId)]).then(
+      ([matterResult, externalCasesResult]) => {
+        if (matterResult.ok) {
+          setMatter(matterResult.data);
+        } else {
+          setError(matterResult.message);
+          return;
+        }
+
+        if (externalCasesResult.ok) {
+          setPublicCase(externalCasesResult.data.items[0] ?? null);
+        } else {
+          setError(externalCasesResult.message);
+        }
       }
-      setError(result.message);
-    });
+    );
   }, [matterId]);
 
   if (error) {
@@ -86,6 +96,29 @@ export function MatterCockpit({ matterId }: { matterId: string }) {
             {matter.summary ?? "No summary has been recorded yet."}
           </div>
         </Card>
+
+        <Card>
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <div className="text-xs uppercase tracking-[0.22em] text-slate-400">
+                Public docket
+              </div>
+              <div className="mt-2 text-xl font-semibold text-white">
+                {publicCase?.case_number ?? "No linked external case"}
+              </div>
+              <div className="mt-2 text-sm leading-6 text-slate-300">
+                {publicCase
+                  ? `${publicCase.court_name ?? "Unknown court"} • ${publicCase.bench_label ?? "Bench pending"} • next date ${formatDate(publicCase.next_listing_date)}`
+                  : "Link and import an official court artifact to start chronology, memories, and bench intelligence."}
+              </div>
+            </div>
+            {publicCase ? (
+              <Badge variant="success">{publicCase.provenance.verification_status}</Badge>
+            ) : (
+              <Badge variant="warning">awaiting import</Badge>
+            )}
+          </div>
+        </Card>
       </div>
 
       <div className="grid gap-4 lg:grid-cols-[1fr_1fr]">
@@ -121,6 +154,9 @@ export function MatterCockpit({ matterId }: { matterId: string }) {
             </Button>
             <Button variant="ghost" asChild>
               <Link href={`/matters/${matter.id}/bundle`}>Bundle map</Link>
+            </Button>
+            <Button variant="secondary" asChild>
+              <Link href={`/matters/${matter.id}/intelligence`}>Court intelligence</Link>
             </Button>
             <Button variant="secondary" asChild>
               <Link href={`/matters/${matter.id}/drafting`}>Draft studio</Link>
