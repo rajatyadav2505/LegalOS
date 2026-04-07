@@ -104,6 +104,8 @@ tests/
 
 ## Local Setup
 
+For a native Windows 10/11 walkthrough using PowerShell and Docker Desktop, use [WindowsSetup.md](./WindowsSetup.md).
+
 ### Prerequisites
 
 - Python 3.12+
@@ -114,7 +116,7 @@ tests/
 
 ### Bootstrapping
 
-1. Copy [`.env.example`](/Users/rajatyadav/LegalOS/.env.example) to `.env`.
+1. Copy [`.env.example`](./.env.example) to `.env`.
 2. Run `make setup`.
 3. Start infrastructure with `make compose-up`.
 4. Apply migrations with `make migrate`.
@@ -138,7 +140,7 @@ tests/
 
 ## Configuration
 
-Use [`.env.example`](/Users/rajatyadav/LegalOS/.env.example) as the baseline. The sample file now defaults to migration-first and safer runtime behavior:
+Use [`.env.example`](./.env.example) as the baseline. The sample file now defaults to migration-first and safer runtime behavior:
 
 - `AUTO_CREATE_DB=false`: schema changes should come from Alembic, not implicit startup DDL
 - `AUTO_SEED_DEMO=false`: seed explicitly with `make seed` so demo writes are intentional
@@ -227,7 +229,7 @@ The repository has been verified with the following commands:
 
 ### Product eval docs
 
-See [docs/evals/citation-integrity.md](/Users/rajatyadav/LegalOS/docs/evals/citation-integrity.md), [docs/evals/quote-span-integrity.md](/Users/rajatyadav/LegalOS/docs/evals/quote-span-integrity.md), [docs/evals/chronology-fidelity.md](/Users/rajatyadav/LegalOS/docs/evals/chronology-fidelity.md), [docs/evals/memory-grounding.md](/Users/rajatyadav/LegalOS/docs/evals/memory-grounding.md), [docs/evals/profile-safety.md](/Users/rajatyadav/LegalOS/docs/evals/profile-safety.md), [docs/evals/retrieval-relevance.md](/Users/rajatyadav/LegalOS/docs/evals/retrieval-relevance.md), [docs/evals/missing-record-detection.md](/Users/rajatyadav/LegalOS/docs/evals/missing-record-detection.md), [docs/evals/source-attribution-integrity.md](/Users/rajatyadav/LegalOS/docs/evals/source-attribution-integrity.md), [docs/evals/draft-completeness.md](/Users/rajatyadav/LegalOS/docs/evals/draft-completeness.md), [docs/evals/strategy-boundedness.md](/Users/rajatyadav/LegalOS/docs/evals/strategy-boundedness.md), and [docs/evals/institutional-auditability.md](/Users/rajatyadav/LegalOS/docs/evals/institutional-auditability.md).
+See [docs/evals/citation-integrity.md](./docs/evals/citation-integrity.md), [docs/evals/quote-span-integrity.md](./docs/evals/quote-span-integrity.md), [docs/evals/chronology-fidelity.md](./docs/evals/chronology-fidelity.md), [docs/evals/memory-grounding.md](./docs/evals/memory-grounding.md), [docs/evals/profile-safety.md](./docs/evals/profile-safety.md), [docs/evals/retrieval-relevance.md](./docs/evals/retrieval-relevance.md), [docs/evals/missing-record-detection.md](./docs/evals/missing-record-detection.md), [docs/evals/source-attribution-integrity.md](./docs/evals/source-attribution-integrity.md), [docs/evals/draft-completeness.md](./docs/evals/draft-completeness.md), [docs/evals/strategy-boundedness.md](./docs/evals/strategy-boundedness.md), and [docs/evals/institutional-auditability.md](./docs/evals/institutional-auditability.md).
 
 ## Self-Hosting Notes
 
@@ -240,7 +242,7 @@ The local baseline is aimed at a Mac mini or Linux self-hosted deployment:
 - web and API can also run against an already-provisioned local stack
 - official court ingestion supports lawful feeds and user-assisted imports first; captcha-protected surfaces require manual or operator-assisted paths rather than bypass
 
-See [docs/runbooks/self-hosting.md](/Users/rajatyadav/LegalOS/docs/runbooks/self-hosting.md) for deployment expectations and security notes.
+See [docs/runbooks/self-hosting.md](./docs/runbooks/self-hosting.md) for deployment expectations and security notes.
 
 ## Important Limitations
 
@@ -261,21 +263,21 @@ See [docs/runbooks/self-hosting.md](/Users/rajatyadav/LegalOS/docs/runbooks/self
 
 ## Documentation
 
-- [docs/product/overview.md](/Users/rajatyadav/LegalOS/docs/product/overview.md)
-- [docs/adr/0001-architecture.md](/Users/rajatyadav/LegalOS/docs/adr/0001-architecture.md)
-- [docs/adr/0002-public-data-ingestion-strategy.md](/Users/rajatyadav/LegalOS/docs/adr/0002-public-data-ingestion-strategy.md)
-- [docs/adr/0003-bounded-intelligence-orchestration.md](/Users/rajatyadav/LegalOS/docs/adr/0003-bounded-intelligence-orchestration.md)
-- [docs/adr/0004-litigant-memory-design.md](/Users/rajatyadav/LegalOS/docs/adr/0004-litigant-memory-design.md)
-- [docs/adr/0005-profile-guardrails.md](/Users/rajatyadav/LegalOS/docs/adr/0005-profile-guardrails.md)
-- [docs/adr/0006-hybrid-retrieval-architecture.md](/Users/rajatyadav/LegalOS/docs/adr/0006-hybrid-retrieval-architecture.md)
-- [docs/runbooks/local-dev.md](/Users/rajatyadav/LegalOS/docs/runbooks/local-dev.md)
-- [docs/runbooks/importing-official-artifacts.md](/Users/rajatyadav/LegalOS/docs/runbooks/importing-official-artifacts.md)
-- [docs/runbooks/refreshing-memory-and-profiles.md](/Users/rajatyadav/LegalOS/docs/runbooks/refreshing-memory-and-profiles.md)
-- [docs/runbooks/troubleshooting-connector-failures.md](/Users/rajatyadav/LegalOS/docs/runbooks/troubleshooting-connector-failures.md)
-- [docs/runbooks/testing.md](/Users/rajatyadav/LegalOS/docs/runbooks/testing.md)
-- [WindowsSetup.md](/Users/rajatyadav/LegalOS/WindowsSetup.md)
-- [IMPLEMENTATION_STATUS.md](/Users/rajatyadav/LegalOS/IMPLEMENTATION_STATUS.md)
-- [BACKLOG.md](/Users/rajatyadav/LegalOS/BACKLOG.md)
+- [docs/product/overview.md](./docs/product/overview.md)
+- [docs/adr/0001-architecture.md](./docs/adr/0001-architecture.md)
+- [docs/adr/0002-public-data-ingestion-strategy.md](./docs/adr/0002-public-data-ingestion-strategy.md)
+- [docs/adr/0003-bounded-intelligence-orchestration.md](./docs/adr/0003-bounded-intelligence-orchestration.md)
+- [docs/adr/0004-litigant-memory-design.md](./docs/adr/0004-litigant-memory-design.md)
+- [docs/adr/0005-profile-guardrails.md](./docs/adr/0005-profile-guardrails.md)
+- [docs/adr/0006-hybrid-retrieval-architecture.md](./docs/adr/0006-hybrid-retrieval-architecture.md)
+- [docs/runbooks/local-dev.md](./docs/runbooks/local-dev.md)
+- [docs/runbooks/importing-official-artifacts.md](./docs/runbooks/importing-official-artifacts.md)
+- [docs/runbooks/refreshing-memory-and-profiles.md](./docs/runbooks/refreshing-memory-and-profiles.md)
+- [docs/runbooks/troubleshooting-connector-failures.md](./docs/runbooks/troubleshooting-connector-failures.md)
+- [docs/runbooks/testing.md](./docs/runbooks/testing.md)
+- [WindowsSetup.md](./WindowsSetup.md)
+- [IMPLEMENTATION_STATUS.md](./IMPLEMENTATION_STATUS.md)
+- [BACKLOG.md](./BACKLOG.md)
 
 ## Next Priorities
 

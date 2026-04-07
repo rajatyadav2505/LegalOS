@@ -117,7 +117,7 @@ Delivered:
 - Browser auth storage now uses cookies only, with `Secure` enabled on HTTPS
 - LIKE filters now escape wildcard characters, sequencing matching uses safer phrase boundaries, and scanned PDFs can fall back to OCR on embedded page images
 - Integration coverage now includes tenant isolation, upload-size enforcement, and login throttling
-- Native Windows local onboarding is now documented in `WindowsSetup.md`
+- Native Windows local onboarding is now documented in `WindowsSetup.md`, including a full PowerShell and Docker Desktop setup path, verification steps, restart instructions, and troubleshooting guidance for friend-to-friend handoff
 
 ## Risks And Constraints
 

@@ -4,7 +4,7 @@
 
 Run the LegalOS repository locally for development in a self-hostable setup.
 
-For native Windows setup, use [WindowsSetup.md](/Users/rajatyadav/LegalOS/WindowsSetup.md).
+For native Windows setup, use the step-by-step [WindowsSetup.md](../../WindowsSetup.md) guide. It covers PowerShell, Docker Desktop, local verification, worker recovery, and common Windows-specific issues.
 
 ## Expected Local Stack
 
