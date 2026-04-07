@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-make lint
-make test
+python_bin="$("./infra/scripts/resolve-python.sh")"
+"${python_bin}" ./infra/scripts/lint_bootstrap.py

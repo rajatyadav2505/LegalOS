@@ -17,3 +17,5 @@ source .venv/bin/activate
 pip install -e .[dev]
 uvicorn app.main:app --reload
 ```
+
+On Windows PowerShell, activate the environment with `.\.venv\Scripts\Activate.ps1` before running the same `python -m pip` or `python -m uvicorn` commands.

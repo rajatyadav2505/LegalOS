@@ -104,7 +104,7 @@ tests/
 
 ## Local Setup
 
-For a native Windows 10/11 walkthrough using PowerShell and Docker Desktop, use [WindowsSetup.md](./WindowsSetup.md).
+For a native Windows 10/11 walkthrough using PowerShell and Docker Desktop, use [WindowsSetup.md](./WindowsSetup.md). The repo `Makefile` supports macOS, Linux, WSL, and Git Bash on Windows; the PowerShell guide remains the most direct native-Windows path.
 
 ### Prerequisites
 
@@ -203,15 +203,15 @@ The repository has been verified with the following commands:
 - `make lint`
 - `make test`
 - `make build-web`
-- `./.venv/bin/ruff check apps/api tests/bootstrap tests/integration`
-- `./.venv/bin/mypy apps/api/app`
-- `./.venv/bin/pytest tests/bootstrap tests/integration -q`
-- `./.venv/bin/pytest tests/integration/test_court_intelligence_flow.py -q`
+- `python -m ruff check apps/api tests/bootstrap tests/integration`
+- `python -m mypy apps/api/app`
+- `python -m pytest tests/bootstrap tests/integration -q`
+- `python -m pytest tests/integration/test_court_intelligence_flow.py -q`
 - `PATH=/usr/local/bin:/opt/homebrew/bin:$PATH apps/web/node_modules/.bin/tsc -p packages/contracts/tsconfig.build.json`
 - `PATH=/usr/local/bin:/opt/homebrew/bin:$PATH apps/web/node_modules/.bin/tsc -p packages/ui/tsconfig.build.json`
 - `PATH=/usr/local/bin:/opt/homebrew/bin:$PATH apps/web/node_modules/.bin/tsc -p apps/web/tsconfig.json --noEmit --incremental false`
 - `PATH=/usr/local/bin:/opt/homebrew/bin:$PATH node_modules/.bin/next build`
-- `DATABASE_URL=sqlite+aiosqlite:///./.data/court-intelligence-migrate.db PYTHONPATH=apps/api ./.venv/bin/python apps/worker-ai/src/worker_ai.py --run-next`
+- `DATABASE_URL=sqlite+aiosqlite:///./.data/court-intelligence-migrate.db PYTHONPATH=apps/api python apps/worker-ai/src/worker_ai.py --run-next`
 
 ## Tests and Evals
 

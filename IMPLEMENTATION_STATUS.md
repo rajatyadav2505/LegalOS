@@ -14,6 +14,7 @@ Delivered:
 
 - Monorepo scaffold with `apps/*`, `packages/*`, `docs/*`, `infra/*`, and `tests/*`
 - Root workspace metadata, task runner, bootstrap scripts, and CI workflow
+- Cross-platform bootstrap support for macOS, Linux, WSL, and Git Bash on Windows, plus a native Windows PowerShell runbook
 - Local compose stack for PostgreSQL, Valkey, MinIO, and Apache Tika
 - FastAPI application skeleton with settings, auth, domain models, repositories, services, and Alembic baseline
 - Next.js App Router shell with typed API client integration
@@ -134,12 +135,12 @@ Delivered:
 - `make lint`
 - `make test`
 - `make build-web`
-- `./.venv/bin/ruff check apps/api tests/bootstrap tests/integration`
-- `./.venv/bin/mypy apps/api/app`
-- `./.venv/bin/pytest tests/bootstrap tests/integration -q`
-- `./.venv/bin/pytest tests/integration/test_workflow_phases.py -q`
-- `./.venv/bin/pytest tests/integration/test_security_hardening.py -q`
-- `./.venv/bin/pytest tests/integration/test_court_intelligence_flow.py -q`
+- `python -m ruff check apps/api tests/bootstrap tests/integration`
+- `python -m mypy apps/api/app`
+- `python -m pytest tests/bootstrap tests/integration -q`
+- `python -m pytest tests/integration/test_workflow_phases.py -q`
+- `python -m pytest tests/integration/test_security_hardening.py -q`
+- `python -m pytest tests/integration/test_court_intelligence_flow.py -q`
 - `PATH=/usr/local/bin:/opt/homebrew/bin:$PATH apps/web/node_modules/.bin/tsc -p packages/contracts/tsconfig.build.json`
 - `PATH=/usr/local/bin:/opt/homebrew/bin:$PATH apps/web/node_modules/.bin/tsc -p packages/ui/tsconfig.build.json`
 - `PATH=/usr/local/bin:/opt/homebrew/bin:$PATH apps/web/node_modules/.bin/tsc -p apps/web/tsconfig.json --noEmit --incremental false`
@@ -147,8 +148,8 @@ Delivered:
 - `cd apps/api && DATABASE_URL=sqlite+aiosqlite:///../../.data/migrate-phase345-smoke.db ../../.venv/bin/alembic upgrade head`
 - `cd apps/api && DATABASE_URL=sqlite+aiosqlite:///../../.data/migrate-phase2-final.db ../../.venv/bin/alembic upgrade head`
 - `cd apps/api && DATABASE_URL=sqlite+aiosqlite:///../../.data/court-intelligence-migrate.db ../../.venv/bin/alembic upgrade head`
-- `PYTHONPATH=apps/api ./.venv/bin/python apps/worker-ingest/src/worker_ingest.py --help`
-- `DATABASE_URL=sqlite+aiosqlite:///./.data/court-intelligence-migrate.db PYTHONPATH=apps/api ./.venv/bin/python apps/worker-ai/src/worker_ai.py --run-next`
+- `PYTHONPATH=apps/api python apps/worker-ingest/src/worker_ingest.py --help`
+- `DATABASE_URL=sqlite+aiosqlite:///./.data/court-intelligence-migrate.db PYTHONPATH=apps/api python apps/worker-ai/src/worker_ai.py --run-next`
 - `cd apps/api && DATABASE_URL=sqlite+aiosqlite:///../../.data/run-smoke.db AUTO_CREATE_DB=true ../../.venv/bin/uvicorn app.main:app --host 127.0.0.1 --port 8010`
 - `curl -s http://127.0.0.1:8010/api/v1/health` -> `{"message":"ok"}`
 - `PATH=/usr/local/bin:$PATH COREPACK_HOME=/tmp/corepack /usr/local/bin/corepack pnpm --filter @legalos/web exec next start --hostname 127.0.0.1 --port 3000`

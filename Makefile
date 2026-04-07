@@ -7,6 +7,16 @@ COREPACK := $(shell command -v corepack 2>/dev/null || echo /usr/local/bin/corep
 NODE_BIN_DIR := $(shell dirname "$$(command -v node 2>/dev/null || echo /usr/local/bin/node)")
 PNPM := PATH=$(NODE_BIN_DIR):$$PATH COREPACK_HOME=/tmp/corepack $(COREPACK) pnpm
 
+ifeq ($(OS),Windows_NT)
+VENV_BIN_DIR := .venv/Scripts
+VENV_PYTHON := $(VENV_BIN_DIR)/python.exe
+else
+VENV_BIN_DIR := .venv/bin
+VENV_PYTHON := $(VENV_BIN_DIR)/python
+endif
+
+VENV_PYTHON_API := ../../$(VENV_PYTHON)
+
 .PHONY: help bootstrap doctor setup lint test dev dev-api dev-web build-web e2e seed migrate drain-queued drain-intelligence-jobs compose-up compose-down compose-logs
 
 help:
@@ -30,7 +40,7 @@ help:
 
 setup: bootstrap
 	@$(PYTHON) -m venv .venv
-	@./.venv/bin/pip install -e 'apps/api[dev]'
+	@$(VENV_PYTHON) -m pip install -e 'apps/api[dev]'
 	@$(PNPM) install
 
 bootstrap:
@@ -39,19 +49,18 @@ bootstrap:
 doctor:
 	@./infra/scripts/doctor.sh
 
-lint:
-	@$(PYTHON) ./infra/scripts/lint_bootstrap.py
-	@./.venv/bin/ruff check apps/api apps/worker-ingest apps/worker-ai tests/bootstrap tests/integration
-	@./.venv/bin/mypy apps/api/app
+lint: bootstrap
+	@$(VENV_PYTHON) -m ruff check apps/api apps/worker-ingest apps/worker-ai tests/bootstrap tests/integration
+	@$(VENV_PYTHON) -m mypy apps/api/app
 	@$(PNPM) --filter @legalos/web typecheck
 
-test:
-	@./.venv/bin/pytest tests/bootstrap tests/integration -q
+test: bootstrap
+	@$(VENV_PYTHON) -m pytest tests/bootstrap tests/integration -q
 
 dev: compose-up
 
 dev-api:
-	@cd apps/api && ../../.venv/bin/uvicorn app.main:app --reload
+	@cd apps/api && $(VENV_PYTHON_API) -m uvicorn app.main:app --reload
 
 dev-web:
 	@$(PNPM) --filter @legalos/web dev
@@ -63,16 +72,16 @@ e2e:
 	@printf '%s\n' 'Playwright specs exist under tests/e2e/*.spec.ts; install the browser toolchain before running them.'
 
 seed:
-	@cd apps/api && ../../.venv/bin/python -m app.db.seed
+	@cd apps/api && $(VENV_PYTHON_API) -m app.db.seed
 
 migrate:
-	@cd apps/api && ../../.venv/bin/alembic upgrade head
+	@cd apps/api && $(VENV_PYTHON_API) -m alembic upgrade head
 
 drain-queued:
-	@PYTHONPATH=apps/api ./.venv/bin/python apps/worker-ingest/src/worker_ingest.py --drain-queued --limit 25
+	@PYTHONPATH=apps/api $(VENV_PYTHON) apps/worker-ingest/src/worker_ingest.py --drain-queued --limit 25
 
 drain-intelligence-jobs:
-	@PYTHONPATH=apps/api ./.venv/bin/python apps/worker-ai/src/worker_ai.py --drain --limit 25
+	@PYTHONPATH=apps/api $(VENV_PYTHON) apps/worker-ai/src/worker_ai.py --drain --limit 25
 
 compose-up:
 	@docker compose -f $(COMPOSE_FILE) up -d

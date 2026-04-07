@@ -28,13 +28,15 @@ Define the testing strategy for a trust-sensitive litigation product.
 
 ## Current Commands
 
+Assume the project virtualenv is activated before running the direct Python commands below.
+
 - `make lint`
 - `make test`
 - `make build-web`
-- `./.venv/bin/ruff check apps/api tests/bootstrap tests/integration`
-- `./.venv/bin/mypy apps/api/app`
-- `./.venv/bin/pytest tests/bootstrap tests/integration -q`
-- `./.venv/bin/pytest tests/integration/test_court_intelligence_flow.py -q`
+- `python -m ruff check apps/api tests/bootstrap tests/integration`
+- `python -m mypy apps/api/app`
+- `python -m pytest tests/bootstrap tests/integration -q`
+- `python -m pytest tests/integration/test_court_intelligence_flow.py -q`
 - `PATH=/usr/local/bin:/opt/homebrew/bin:$PATH apps/web/node_modules/.bin/tsc -p apps/web/tsconfig.json --noEmit --incremental false`
 - `PATH=/usr/local/bin:/opt/homebrew/bin:$PATH node_modules/.bin/next build`
 

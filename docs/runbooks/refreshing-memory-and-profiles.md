@@ -25,7 +25,7 @@ To run a single claim attempt directly:
 ```bash
 DATABASE_URL=sqlite+aiosqlite:///./.data/court-intelligence-migrate.db \
 PYTHONPATH=apps/api \
-./.venv/bin/python apps/worker-ai/src/worker_ai.py --run-next
+python apps/worker-ai/src/worker_ai.py --run-next
 ```
 
 ## When To Refresh

@@ -2,7 +2,7 @@
 
 This guide is the Windows-first path for running LegalOS locally on a native Windows 10 or Windows 11 machine with PowerShell and Docker Desktop.
 
-Use this guide if your friend wants the most direct setup on Windows without relying on the repo `Makefile`. The current `Makefile` assumes a Unix-style shell, so native Windows users should follow the explicit PowerShell commands below.
+Use this guide if your friend wants the most direct setup on Windows without relying on Git Bash or WSL. The repo `Makefile` supports Git Bash on Windows, but native PowerShell users should still follow the explicit commands below.
 
 If they prefer WSL2 or Git Bash, they can use the main [README](./README.md) and [local development runbook](./docs/runbooks/local-dev.md) instead.
 

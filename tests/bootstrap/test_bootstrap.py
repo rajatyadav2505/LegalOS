@@ -39,3 +39,16 @@ def test_makefile_contains_expected_targets() -> None:
     makefile = (ROOT / "Makefile").read_text(encoding="utf-8")
     for target in ("bootstrap:", "lint:", "test:", "compose-up:", "compose-down:"):
         assert target in makefile
+
+
+def test_makefile_supports_windows_virtualenv_layout() -> None:
+    makefile = (ROOT / "Makefile").read_text(encoding="utf-8")
+    assert "VENV_PYTHON" in makefile
+    assert ".venv/bin" in makefile
+    assert ".venv/Scripts" in makefile
+
+
+def test_python_resolution_supports_common_windows_launchers() -> None:
+    script = (ROOT / "infra/scripts/resolve-python.sh").read_text(encoding="utf-8")
+    for candidate in ("python3.12", "python3", "python", "py -3.12", "py -3"):
+        assert candidate in script
