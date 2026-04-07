@@ -50,5 +50,6 @@ def test_makefile_supports_windows_virtualenv_layout() -> None:
 
 def test_python_resolution_supports_common_windows_launchers() -> None:
     script = (ROOT / "infra/scripts/resolve-python.sh").read_text(encoding="utf-8")
+    assert "--run" in script
     for candidate in ("python3.12", "python3", "python", "py -3.12", "py -3"):
         assert candidate in script

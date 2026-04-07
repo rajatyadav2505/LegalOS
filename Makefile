@@ -44,7 +44,7 @@ setup: bootstrap
 	@$(PNPM) install
 
 bootstrap:
-	@./infra/scripts/bootstrap.sh
+	@bash ./infra/scripts/bootstrap.sh
 
 doctor:
 	@./infra/scripts/doctor.sh
